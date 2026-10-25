@@ -39,6 +39,8 @@ cd /var/tmp/site/md    && npx vercel deploy --prebuilt --prod --token "$TOKEN" -
 
 `site/build.mjs` writes a Build Output (`.vercel/output`) and a `.vercel/project.json` that contains only the project and team ids, which is why `--prebuilt` needs no login or Git link. Big files stay out of the repository.
 
+**Pushing to GitHub does not deploy.** Both repositories contain a `vercel.json` that turns off Git-triggered deployments for `main` and `master`, because a plain Git build would not contain the installers, `/downloads/` or `/updates/latest.json`. The sites only change when you run the `vercel deploy --prebuilt` commands above.
+
 Vercel Hobby limits that matter here: 100 MB per static file, 10 GB of storage, 100 GB a month of transfer, 100 deployments a day. An installer is about 85 MB, so keep an eye on the 100 MB file limit and on old deployments piling up.
 
 ## 3. After a deploy, check
