@@ -1,11 +1,11 @@
 {
   "study": {
     "notes": "Everything now lives on Vercel: downloads and updates come straight from the website, with no GitHub. The setup window says Study with Sarang, the voice icon is the default, the app checks for updates by itself and asks before installing, and the browser helper pairs with one click.",
-    "webNotes": "A Get the app banner and a real download page, a cleaner Studio with the timer kept in view, forgot password, invitations and branded emails, and an update note when a newer page is out."
+    "webNotes": "Browser notifications now show your chosen app icon. Earlier in 1.10.0: a Get the app banner and a real download page, a cleaner Studio with the timer kept in view, forgot password, invitations and branded emails."
   },
   "md": {
     "notes": "Fix: the buttons in the Ask orb (send, close, Ask another) now respond to real clicks, and the orb is centred. Earlier in 1.2.0: the Ask orb as the front door of the AI Socratic tutor, all 83 textbook chapters and 66 long-form questions (written independently, not IB mark schemes).",
-    "webNotes": "Ask orb fix: the send, close and Ask another buttons work, and the orb is centred."
+    "webNotes": "The study-timer notification shows the Sarang.md logo. Earlier: the Ask orb fix, all 83 textbook chapters and 66 long-form questions."
   },
   "helper": {
     "notes": "A new icon, a real settings page and a popup, one-click pairing with the app (no code to copy), install buttons in the app for Chrome, Edge and Brave, and automatic refresh of the helper folder after each app update."

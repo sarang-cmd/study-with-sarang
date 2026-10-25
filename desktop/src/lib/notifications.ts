@@ -1,4 +1,5 @@
 import { desktop } from './desktop';
+import { getPrefs } from './prefs';
 
 /**
  * The notification centre: a short history of what the app told you (unlocks, goals, reminders, drift, AI, updates),
@@ -137,6 +138,8 @@ export const onCelebrate = (fn: (items: CelebrateItem[]) => void) => { celebrant
 export const celebrate = (items: CelebrateItem[]) => { if (!items.length) return; if (!celebrants.size) { waiting = [...waiting, ...items].slice(-20); return; } celebrants.forEach((fn) => fn(items)); };
 
 /** A system notification when the app is in the background (the desktop shell shows its own; a browser needs permission). */
+/** The app logo (your chosen icon) for a browser notification, so it carries the logo instead of a blank square. */
+const notifyIcon = () => { try { const url = new URL(`icons/${getPrefs().appIcon}/art-256.png`, document.baseURI).href; return { icon: url, badge: url }; } catch { return {}; } };
 /** True while you are using this window. A covered or minimised window is not "in front", even though the page may still count as visible. */
 export const appInFront = () => typeof document !== 'undefined' && !document.hidden && document.hasFocus();
 export function osNotify(title: string, body: string) {
@@ -144,7 +147,7 @@ export function osNotify(title: string, body: string) {
   if (settings.osWhen === 'away' && appInFront()) return;
   try {
     if (desktop?.notify) { desktop.notify(title, body); return; }
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') new Notification(title, { body, silent: true });
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') new Notification(title, { body, silent: true, ...notifyIcon() });
   } catch { /* Optional. */ }
 }
 /** The Test button: shows one now and says what happened, in plain words. */
@@ -160,7 +163,7 @@ export async function testOsNotification(): Promise<{ ok: boolean; text: string 
     if (typeof Notification === 'undefined') return { ok: false, text: 'This browser has no notifications.' };
     if (Notification.permission === 'default') await Notification.requestPermission();
     if (Notification.permission !== 'granted') return { ok: false, text: 'The browser blocked notifications for this site. Allow them in the address bar.' };
-    new Notification(title, { body, silent: true }); return { ok: true, text: 'Sent.' };
+    new Notification(title, { body, silent: true, ...notifyIcon() }); return { ok: true, text: 'Sent.' };
   } catch (error) { return { ok: false, text: error instanceof Error ? error.message : 'It did not work.' }; }
 }
 export async function askOsPermission(): Promise<boolean> {
