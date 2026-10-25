@@ -4,8 +4,8 @@
     "webNotes": "A Get the app banner and a real download page, a cleaner Studio with the timer kept in view, forgot password, invitations and branded emails, and an update note when a newer page is out."
   },
   "md": {
-    "notes": "Everything now lives on Vercel: downloads and updates come from the website. The Focus studio has a Sarang.md outside the browser banner, scrollbars are gone, the app checks for updates by itself and asks before installing, and there is a Forgot password link plus branded emails. The textbook now covers all 50 topics of Units 1 to 3.",
-    "webNotes": "A visible download banner, no scrollbars, forgot password and invitation emails, and the full textbook for Units 1 to 3 (50 chapters)."
+    "notes": "New: the Ask orb is the front door of the AI Socratic tutor, with live hints from your own provider key. The textbook now covers every topic: 83 chapters including Statistics and Probability and Calculus. 66 new long-form practice questions come with M, A and R mark schemes (written independently, not IB mark schemes).",
+    "webNotes": "The Ask orb for the Socratic tutor, all 83 textbook chapters (new Units 4 and 5) and 66 long-form questions with detailed mark schemes."
   },
   "helper": {
     "notes": "A new icon, a real settings page and a popup, one-click pairing with the app (no code to copy), install buttons in the app for Chrome, Edge and Brave, and automatic refresh of the helper folder after each app update."
