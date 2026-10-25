@@ -22,6 +22,14 @@ export async function startMock() {
     if (req.headers.apikey !== anon && req.headers.apikey !== publishable) return send(401, { message: 'No API key found in request' });
     const path = url.pathname;
     flags.lastAuth = req.headers.authorization;
+    if (path === '/auth/v1/user' && req.method === 'PUT') {
+      const uid = tokens.get((req.headers.authorization ?? '').replace('Bearer ', '')); const u = uid && users.get(uid);
+      if (!u) return send(401, { msg: 'invalid JWT' });
+      if (typeof body.password !== 'string' || body.password.length < 8) return send(422, { msg: 'Password should be at least 8 characters' });
+      u.password = body.password; flags.passwordChanges = (flags.passwordChanges ?? 0) + 1; return send(200, { id: u.id, email: u.email });
+    }
+    if (path === '/auth/v1/recover') { flags.lastRedirect = url.searchParams.get('redirect_to'); const u = [...users.values()].find((x) => x.email === body.email); if (u) u.recovery = '246810'; flags.recoverCalls = (flags.recoverCalls ?? 0) + 1; return send(200, {}); }
+    if (path === '/auth/v1/verify' && body.type === 'recovery') { const u = [...users.values()].find((x) => x.email === body.email); return u && u.recovery && body.token === u.recovery ? (u.recovery = '', send(200, session(u))) : send(403, { msg: 'Token has expired or is invalid' }); }
     if (path === '/auth/v1/user') { const uid = tokens.get((req.headers.authorization ?? '').replace('Bearer ', '')); const u = uid && users.get(uid); return u ? send(200, { id: u.id, email: u.email }) : send(401, { msg: 'invalid JWT' }); }
     if (path === '/auth/v1/resend') { const p = flags.pendingUsers.get(body.email); if (!p) return send(200, {}); p.code = '777777'; flags.lastRedirect = url.searchParams.get('redirect_to'); return send(200, {}); }
     if (path === '/auth/v1/signup') {
@@ -69,5 +77,5 @@ export async function startMock() {
 
 
 
-  return { url: `http://127.0.0.1:${server.address().port}`, anon, publishable, serviceRole, users, tokens, rows, flags, close: () => server.close() };
+  return { url: `http://127.0.0.1:${server.address().port}`, anon, publishable, serviceRole, users, tokens, rows, flags, mintToken: (user) => session(user).access_token, close: () => server.close() };
 }

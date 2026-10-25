@@ -114,3 +114,6 @@ html[data-ui='simple'] .section-label, html[data-ui='simple'] .calm-hide { displ
 }
 .room-on .room-shadow { text-shadow: 0 2px 18px rgb(0 0 0 / .55); }
 .room-on .room-glass { background: rgb(0 0 0 / .38); backdrop-filter: blur(6px); }
+
+/* The timer stays in view beside the long sound card, when the window is big enough to hold it. */
+@media (min-width: 1280px) and (min-height: 820px) { .sticky-timer { position: sticky; top: 5.5rem; } }

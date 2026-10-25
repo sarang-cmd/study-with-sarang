@@ -105,7 +105,7 @@ async function install({ source, dest, appName, version, options, ops, onProgres
     await fs.promises.copyFile(path.join(source, file.rel), to);
     copied += file.size; done += 1;
     const now = Date.now();
-    if (now - lastReport > 40 || done === total) { lastReport = now; report(8 + (bytes ? copied / bytes : 1) * 76, 'Unpacking Flow', { files: done, total }); }
+    if (now - lastReport > 40 || done === total) { lastReport = now; report(8 + (bytes ? copied / bytes : 1) * 76, 'Unpacking Study with Sarang', { files: done, total }); }
   }
   await fs.promises.writeFile(path.join(target, MARKER), JSON.stringify({ name: appName, version, installedAt: new Date().toISOString(), options }, null, 2));
 

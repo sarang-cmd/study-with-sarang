@@ -16,7 +16,7 @@ const defaults = {
   puckPos: null,       // { x, y } of the floating puck
   bounds: null,        // { x, y, width, height, displayId, maximized }
   compactBounds: null, // { x, y, displayId }
-  updateRepo: '',      // "owner/repository" on GitHub; empty uses the one built into the app
+  updateRepo: '',      // update feed address (https, vercel.app); empty uses the one built into the app
   updateAuto: true,    // check for updates in the background
   updateSkip: '',      // a version the user chose to skip
   nativeControls: true, // Windows: the system minimize/maximize/close buttons (they bring the Windows 11 snap layouts); false draws the app's own

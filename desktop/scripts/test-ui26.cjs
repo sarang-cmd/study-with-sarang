@@ -77,6 +77,15 @@ const shot = process.env.SWA_SHOTS;
   const token = await page.inputValue('[data-testid="drift-token"]'); const port = Number(await page.inputValue('[data-testid="drift-port"]'));
   assert.match(token, /^[a-f0-9]{48}$/); assert.equal(port, 47615);
   await page.waitForFunction(() => /Waiting for the browser extension/.test(document.querySelector('[data-testid="drift-helper-status"]')?.textContent ?? ''), null, { timeout: 8000 });
+  // pairing from the page: the button opens the window and the extension can fetch the code once
+  assert.equal(await page.locator('[data-testid^="drift-install-"]').count(), 3, 'one install button per browser');
+  const extHeaders = { origin: 'chrome-extension://abcdefghijklmnopabcdefghijklmnop' };
+  assert.equal((await fetch(`http://127.0.0.1:${port}/pair`, { headers: extHeaders })).status, 403, 'not before the button is pressed');
+  await page.click('[data-testid="drift-pair"]');
+  await page.waitForSelector('[data-testid="drift-pairing"]', { timeout: 5000 });
+  const got = await fetch(`http://127.0.0.1:${port}/pair`, { headers: extHeaders }); assert.equal(got.status, 200); assert.equal((await got.json()).token, token);
+  await page.waitForFunction(() => !document.querySelector('[data-testid="drift-pairing"]'), null, { timeout: 5000 });
+  assert.equal((await fetch(`http://127.0.0.1:${port}/pair`, { headers: extHeaders })).status, 403, 'and not again afterwards');
   const post = (headers, body) => fetch(`http://127.0.0.1:${port}/tab`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
   assert.equal((await post({ authorization: 'Bearer wrong' }, { host: 'instagram.com' })).status, 401);
   await inject({ src: 'window', app: 'brave', title: 'Docs - Brave', host: '' });

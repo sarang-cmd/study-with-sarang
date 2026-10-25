@@ -3,11 +3,11 @@ import { useEffect, useState, type FormEvent } from 'react';
 import schemaSql from '../../supabase/schema.sql?raw';
 import {
   BUILT_IN, CLOUD_EVENT, CloudError, configured, deleteCloudCopy, getConfig, pendingReload, sendCode, setAuto, setProject, signIn, signOut, signUp,
-  resendSignup, startScheduler, syncNow, verifyCode, verifySignup, type SyncMode,
+  completePasswordSetup, requestPasswordReset, resendSignup, startScheduler, syncNow, verifyCode, verifyRecovery, verifySignup, type SyncMode,
 } from '../lib/cloud';
 import { notify } from './ui/toast';
 
-type Way = 'password' | 'create' | 'code';
+type Way = 'password' | 'create' | 'code' | 'reset';
 const ago = (time: number) => {
   if (!time) return 'not yet';
   const s = Math.max(0, Math.round((Date.now() - time) / 1000));
@@ -32,6 +32,7 @@ export function CloudSync({ number = '08', extraSynced, embedded = false }: { nu
   const [email, setEmail] = useState(config.session?.user.email ?? '');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [url, setUrl] = useState(config.url);
@@ -75,6 +76,12 @@ export function CloudSync({ number = '08', extraSynced, embedded = false }: { nu
         const outcome = await signUp(email, password); setPassword('');
         if (outcome === 'confirm') { setConfirming(true); return `We sent a 6 digit code to ${email.trim()}. Type it below. If that address already has an account, no code is sent: use the Sign in tab.`; }
         await syncNow(); return 'Account created and signed in.';
+      }
+      if (way === 'reset') {
+        if (!codeSent) { await requestPasswordReset(email); setCodeSent(true); return `If ${email.trim()} has an account, a reset code is on its way. Type it below with a new password. Only the newest code works.`; }
+        const proven = await verifyRecovery(email, code);
+        await completePasswordSetup(newPassword, proven);
+        setCode(''); setNewPassword(''); setCodeSent(false); setWay('password'); await syncNow(); return 'Password changed. You are signed in.';
       }
       if (!codeSent) { await sendCode(email); setCodeSent(true); return 'Code sent. Check your email and type the code below.'; }
       await verifyCode(email, code); setCode(''); setCodeSent(false); await syncNow(); return 'Signed in.';
@@ -120,18 +127,24 @@ export function CloudSync({ number = '08', extraSynced, embedded = false }: { nu
             </div>
           </details>
         </> : ready && !editing ? <form onSubmit={submit}>
-          <h3 className="text-[14px] font-semibold tracking-tight">Sign in to sync</h3>
+          <h3 className="text-[14px] font-semibold tracking-tight">{way === 'reset' ? 'Reset your password' : 'Sign in to sync'}</h3>
           <div role="tablist" aria-label="How to sign in" className="mt-3 grid grid-cols-3 gap-1 rounded-full border border-line bg-raised p-1 text-[11px] font-semibold">
             {([['password', 'Sign in'], ['create', 'Create account'], ['code', 'Email code']] as [Way, string][]).map(([id, label]) =>
-              <button key={id} type="button" role="tab" aria-selected={way === id} onClick={() => { setWay(id); setProblem(''); setMessage(''); setCodeSent(false); setConfirming(false); }} className={`min-h-8 rounded-full px-2 ${way === id ? 'bg-ink text-canvas' : 'text-muted hover:text-ink'}`}>{label}</button>)}
+              <button key={id} type="button" role="tab" aria-selected={way === id || (id === 'password' && way === 'reset')} onClick={() => { setWay(id); setProblem(''); setMessage(''); setCodeSent(false); setConfirming(false); }} className={`min-h-8 rounded-full px-2 ${way === id || (id === 'password' && way === 'reset') ? 'bg-ink text-canvas' : 'text-muted hover:text-ink'}`}>{label}</button>)}
           </div>
           <label className="mt-3 block text-[11px] font-semibold">Email<input className={field} type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-          {way !== 'code' && !(way === 'create' && confirming) && <label className="mt-2 block text-[11px] font-semibold">Password<input className={field} type="password" required minLength={way === 'create' ? 8 : 1} autoComplete={way === 'create' ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} /></label>}
+          {way !== 'code' && way !== 'reset' && !(way === 'create' && confirming) && <label className="mt-2 block text-[11px] font-semibold">Password<input className={field} type="password" required minLength={way === 'create' ? 8 : 1} autoComplete={way === 'create' ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} /></label>}
           {way === 'create' && confirming && <label className="mt-2 block text-[11px] font-semibold">Confirmation code<input className={field} inputMode="numeric" autoComplete="one-time-code" required pattern="[0-9]{6,8}" maxLength={8} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))} aria-describedby="confirm-help" /></label>}
           {way === 'create' && confirming && <p id="confirm-help" className="mt-1 text-[10px] leading-relaxed text-muted">Check spam if it does not arrive within a minute. The email link also works when opened in this browser.</p>}
+          {way === 'reset' && codeSent && <>
+            <label className="mt-2 block text-[11px] font-semibold">Code from the email<input className={field} inputMode="numeric" autoComplete="one-time-code" required value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))} /></label>
+            <label className="mt-2 block text-[11px] font-semibold">New password<input className={field} type="password" required minLength={8} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></label>
+          </>}
           {way === 'code' && codeSent && <label className="mt-2 block text-[11px] font-semibold">Code from the email<input className={field} inputMode="numeric" autoComplete="one-time-code" required value={code} onChange={(event) => setCode(event.target.value)} /></label>}
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <button type="submit" className="studio-button !bg-ink !text-canvas" disabled={busy}>{way === 'password' ? 'Sign in' : way === 'create' ? (confirming ? 'Confirm' : 'Create account') : codeSent ? 'Verify code' : 'Email me a code'}</button>
+            <button type="submit" className="studio-button !bg-ink !text-canvas" disabled={busy}>{way === 'password' ? 'Sign in' : way === 'create' ? (confirming ? 'Confirm' : 'Create account') : way === 'reset' ? (codeSent ? 'Save new password' : 'Email me a reset code') : codeSent ? 'Verify code' : 'Email me a code'}</button>
+            {way === 'password' && <button type="button" data-testid="forgot-password" className="text-[11px] font-semibold text-muted underline underline-offset-4 hover:text-ink" onClick={() => { setWay('reset'); setProblem(''); setMessage(''); setCodeSent(false); }}>Forgot password?</button>}
+            {way === 'reset' && <button type="button" className="text-[11px] font-semibold text-muted underline underline-offset-4 hover:text-ink" onClick={() => { setWay('password'); setProblem(''); setMessage(''); setCodeSent(false); }}>Back to sign in</button>}
             {way === 'create' && confirming && <button type="button" className="studio-button" disabled={busy} onClick={() => void run(async () => { await resendSignup(email); return 'A new code is on its way. Only the newest one works.'; })}>Send a new code</button>}
           </div>
           <details className="mt-4 rounded-xl border border-line">

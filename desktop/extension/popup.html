@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Study with Sarang Helper</title><link rel="stylesheet" href="ui.css">
+<style>body { width: 330px; padding: 16px; } .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; } .head img { width: 30px; height: 30px; border-radius: 8px; } .head strong { font-size: 15px; } #actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }</style></head>
+<body>
+<div class="head"><img src="icon48.png" alt=""><div><strong>Study with Sarang Helper</strong><br><small id="ver"></small></div></div>
+<div class="pill" role="status"><span class="dot" id="dot"></span><span id="title">Checking...</span></div>
+<p id="text" class="muted" style="margin-top:10px"></p>
+<p id="now" class="muted"></p>
+<label class="row"><input id="enabled" type="checkbox"><span>Report the open website</span></label>
+<div id="actions"><button id="connect" hidden>Connect to the app</button><button id="settings" class="secondary">Settings</button></div>
+<p id="msg" role="status" class="muted" style="margin-top:10px"></p>
+<script src="lib.js"></script><script src="popup.js"></script>
+</body></html>

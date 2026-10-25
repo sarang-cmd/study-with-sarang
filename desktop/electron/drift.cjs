@@ -34,10 +34,10 @@ function cleanTab(body) {
   return { host, title: clip(body.title, 160), browser: clip(body.browser, 40).toLowerCase() };
 }
 
-function createDrift({ dir, platform = process.platform, spawn = realSpawn, execFile = realExecFile, http = realHttp, scriptSource, onSample, onStatus, setIntervalFn = setInterval, clearIntervalFn = clearInterval }) {
+function createDrift({ dir, platform = process.platform, spawn = realSpawn, execFile = realExecFile, http = realHttp, scriptSource, onSample, onStatus, setIntervalFn = setInterval, clearIntervalFn = clearInterval, setTimeoutFn = setTimeout, clearTimeoutFn = clearTimeout }) {
   const winSupported = platform === 'win32' || platform === 'darwin';
   let child = null; let buffer = ''; let poll = null; let pollBusy = false; let server = null; let config = { enabled: false, window: true, helper: false, port: 47615, token: '' };
-  let status = { window: winSupported ? 'off' : 'unsupported', helper: 'off', message: '' }; let lastTabAt = 0; let connectedTimer = null;
+  let status = { window: winSupported ? 'off' : 'unsupported', helper: 'off', message: '', pairing: false }; let lastTabAt = 0; let connectedTimer = null; let pairingUntil = 0; let pairingTimer = null;
   const emit = () => { try { onStatus?.({ ...status }); } catch { /* The page is gone. */ } };
   const setStatus = (patch) => { status = { ...status, ...patch }; emit(); };
   const sample = (s) => { try { onSample?.({ ...s, at: Date.now() }); } catch { /* The page is gone. */ } };
@@ -93,9 +93,20 @@ function createDrift({ dir, platform = process.platform, spawn = realSpawn, exec
   // ---------------------------------------------------------------- the browser helper
   function stopHelper() {
     if (connectedTimer) { clearIntervalFn(connectedTimer); connectedTimer = null; }
+    closePairing();
     const s = server; server = null;
     if (s) { try { s.close(); } catch { /* Closed. */ } }
     setStatus({ helper: 'off' });
+  }
+  function closePairing() { pairingUntil = 0; if (pairingTimer) { clearTimeoutFn(pairingTimer); pairingTimer = null; } setStatus({ pairing: false }); }
+  /** Opens a short window in which the extension may fetch the pairing code with one click. Only the person at this app can open it. */
+  function startPairing(ms = 120_000) {
+    if (!server) return { ok: false, why: 'Turn on the browser helper first.' };
+    pairingUntil = Date.now() + ms;
+    if (pairingTimer) clearTimeoutFn(pairingTimer);
+    pairingTimer = setTimeoutFn(() => closePairing(), ms);
+    setStatus({ pairing: true, message: '' });
+    return { ok: true, until: pairingUntil };
   }
   function handle(req, res) {
     const reply = (code, body, origin) => {
@@ -108,6 +119,18 @@ function createDrift({ dir, platform = process.platform, spawn = realSpawn, exec
       const refused = checkRequest({ host: req.headers.host, origin: req.headers.origin, auth: config.token }, config);
       if (refused && refused.why !== 'token') return reply(refused.status, { error: refused.why });
       return reply(204, {}, origin);
+    }
+    // Two questions the extension may ask before it holds the pairing code: is the app here, and may I pair now?
+    if (req.method === 'GET' && (req.url === '/hello' || req.url === '/pair')) {
+      const hostOk = checkRequest({ host: req.headers.host, origin: req.headers.origin, auth: config.token }, config);
+      if (hostOk) return reply(hostOk.status, { error: hostOk.why }, origin);
+      if (!origin) return reply(403, { error: 'origin' }, origin); // Only a browser extension asks these.
+      const open = pairingUntil > Date.now();
+      if (req.url === '/hello') return reply(200, { app: 'study-with-sarang', v: 2, pairing: open }, origin);
+      if (!open) return reply(403, { error: 'not pairing' }, origin);
+      closePairing(); const id = origin.replace(/^[a-z-]+:\/\//, '').slice(0, 40);
+      setStatus({ helper: status.helper === 'connected' ? 'connected' : 'listening', message: `Paired with the browser extension ${id.slice(0, 8)}.` });
+      return reply(200, { ok: true, token: config.token, port: config.port }, origin);
     }
     const refused = checkRequest({ host: req.headers.host, origin: req.headers.origin, auth: req.headers.authorization }, config);
     if (refused) return reply(refused.status, { error: refused.why }, origin);
@@ -145,7 +168,7 @@ function createDrift({ dir, platform = process.platform, spawn = realSpawn, exec
     if (config.enabled && config.helper) { if (server && (wasPort !== config.port || wasToken !== config.token)) stopHelper(); startHelper(); } else stopHelper();
   }
   function stop() { stopWindow(); stopHelper(); }
-  return { configure, stop, status: () => ({ ...status }), supported: winSupported, handle, injectSample: sample };
+  return { configure, stop, status: () => ({ ...status }), supported: winSupported, handle, injectSample: sample, startPairing };
 }
 
 /** Copies the extension folder out of the packaged app so it can be loaded into a browser. Returns the folder. */
@@ -161,4 +184,28 @@ function exportExtension(from, to) {
   return to;
 }
 
-module.exports = { createDrift, checkRequest, cleanTab, exportExtension };
+const PAGES = { chrome: 'chrome://extensions', edge: 'edge://extensions', brave: 'brave://extensions' };
+/** How to open a browser straight at its extensions page. Returns null when that browser is not found. */
+function browserCommand(browser, { platform, env, exists }) {
+  const page = PAGES[browser]; if (!page) return null;
+  if (platform === 'darwin') return { command: 'open', args: ['-a', { chrome: 'Google Chrome', edge: 'Microsoft Edge', brave: 'Brave Browser' }[browser], page] };
+  if (platform !== 'win32') return null;
+  const roots = [env.LOCALAPPDATA, env.ProgramFiles, env['ProgramFiles(x86)']].filter(Boolean);
+  const rel = { chrome: ['Google', 'Chrome', 'Application', 'chrome.exe'], edge: ['Microsoft', 'Edge', 'Application', 'msedge.exe'], brave: ['BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe'] }[browser];
+  for (const root of roots) { const exe = path.join(root, ...rel); if (exists(exe)) return { command: exe, args: [page] }; }
+  return null;
+}
+
+/** Keeps a folder the person already loaded into a browser current: copies the bundled helper over it when the bundled version is newer.
+ * The browser reads the new files the next time it starts or the extension is reloaded. Returns the new version or ''. */
+function refreshExtension(from, to) {
+  const read = (dir) => { try { return JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8')).version; } catch { return ''; } };
+  const have = read(to); const bundled = read(from);
+  if (!have || !bundled || have === bundled) return '';
+  const num = (v) => String(v).split('.').map((n) => Number(n) || 0);
+  const a = num(bundled); const b = num(have);
+  for (let i = 0; i < 4; i += 1) { if ((a[i] ?? 0) > (b[i] ?? 0)) { exportExtension(from, to); return bundled; } if ((a[i] ?? 0) < (b[i] ?? 0)) return ''; }
+  return '';
+}
+
+module.exports = { createDrift, checkRequest, cleanTab, exportExtension, refreshExtension, browserCommand };

@@ -7,10 +7,11 @@ import { useIntegrationState } from '../../lib/integrationState';
 import { setPrefs, usePrefs } from '../../lib/prefs';
 import { clearDriftAiCache } from '../DriftBridge';
 import { notify } from '../ui/toast';
+import { SUITE } from '../../lib/suite';
 
 const inp = 'field !min-h-9 text-[12px]';
 const lab = 'grid gap-1 text-[11px] font-semibold';
-const helperText: Record<string, string> = { off: 'Off.', listening: 'Waiting for the browser extension.', connected: 'Connected. The extension is reporting the open website.', error: 'Problem.' };
+const helperText: Record<string, string> = { off: 'Off.', listening: 'Ready. Waiting for the browser extension.', connected: 'Connected. The extension is reporting the open website.', error: 'Problem.' };
 const windowText: Record<string, string> = { off: 'Off.', on: 'Watching the front window.', error: 'Problem.', unsupported: 'Not available on this system (Windows and macOS only).' };
 
 function useLog(): DriftLogEntry[] {
@@ -45,6 +46,15 @@ export function DriftTab() {
   const desktopApp = Boolean(desktop);
   const winOk = live.driftWindow !== 'unsupported';
   const enableHelper = (on: boolean) => set({ helper: on, token: on && !d.token ? randomToken() : d.token });
+  const install = async (browser: 'chrome' | 'edge' | 'brave') => {
+    const result = await desktop?.driftInstall(browser);
+    notify({ message: !result ? 'Could not prepare the helper folder.' : `${result.opened ? 'Opened the extensions page.' : 'Opened the helper folder.'} ${result.copied ? 'The folder path is copied: switch on Developer mode, choose Load unpacked and paste it.' : `Choose Load unpacked and pick ${result.folder}.`}`, variant: result ? 'success' : 'error', id: 'drift-install' });
+  };
+  const pairNow = async () => {
+    if (!d.helper) { set({ helper: true, token: d.token || randomToken() }); await new Promise((resolve) => setTimeout(resolve, 900)); }
+    const result = await desktop?.driftPair();
+    if (!result?.ok) notify({ message: result?.why ?? 'Turn on the browser helper first, then try again.', variant: 'error', id: 'drift-pair' });
+  };
   const openFolder = async () => { const folder = await desktop?.driftExtension(); notify({ message: folder ? `Opened ${folder}. In your browser open the extensions page, switch on Developer mode, choose Load unpacked and pick this folder.` : 'Could not open the folder.', variant: folder ? 'success' : 'error', id: 'drift-ext', duration: 12000 }); };
 
   return <div className="grid gap-5">
@@ -104,11 +114,16 @@ export function DriftTab() {
           <label className={lab}>Port<Num min={1024} max={65535} value={d.port} onChange={(port) => set({ port })} data-testid="drift-port" /></label>
         </div>
         <ol className="grid list-decimal gap-1 pl-5 text-[11px] leading-relaxed text-muted">
-          <li>Press the button to open the extension folder.</li>
-          <li>In Brave open <span className="font-mono">brave://extensions</span> (Chrome: <span className="font-mono">chrome://extensions</span>, Edge: <span className="font-mono">edge://extensions</span>), switch on Developer mode, choose Load unpacked and pick that folder.</li>
-          <li>Open the extension's options, paste the pairing code and press Save and test.</li>
+          <li>Press <b>Install the helper</b> for your browser. The app opens its extensions page and copies the folder path. Switch on Developer mode, choose Load unpacked and paste the path.</li>
+          <li>Press <b>Pair the extension</b> here, then press <b>Connect to the app</b> in the helper's page. No code to copy.</li>
         </ol>
-        <div><button type="button" className="studio-button !min-h-9 inline-flex items-center gap-2" onClick={() => void openFolder()}><ExternalLink size={13} />Open the extension folder</button></div>
+        <div className="flex flex-wrap gap-2" data-testid="drift-install">
+          {(['chrome', 'edge', 'brave'] as const).map((b) => <button key={b} type="button" className="studio-button !min-h-9" data-testid={`drift-install-${b}`} onClick={() => void install(b)}><ExternalLink size={13} />Install the helper in {b === 'chrome' ? 'Chrome' : b === 'edge' ? 'Edge' : 'Brave'}</button>)}
+          <button type="button" className="studio-button !min-h-9 studio-button-primary" data-testid="drift-pair" onClick={() => void pairNow()}>Pair the extension</button>
+          <button type="button" className="studio-button !min-h-9" onClick={() => void openFolder()}>Open the folder</button>
+        </div>
+        {live.driftPairing && <p role="status" data-testid="drift-pairing" className="rounded-lg border border-ink px-3 py-2 text-[11px] font-semibold">Waiting for the extension. Press Connect to the app in its page. This closes by itself after two minutes.</p>}
+        <p className="text-[10px] leading-relaxed text-muted">Browsers do not allow a program to install an extension silently, so the last step, Load unpacked, is yours. After that the app keeps the folder current: each time Study with Sarang updates, it refreshes the files, and your browser picks them up when it restarts. The helper is for Chrome, Edge, Brave and other Chromium browsers. The same page, with the download, is at <span className="font-mono">{SUITE.study.downloadsUrl.replace('https://', '')}</span>.</p>
       </div>}
     </Card>
 

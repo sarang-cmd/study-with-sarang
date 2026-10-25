@@ -58,6 +58,24 @@ Decisions (from the questions asked): the GitHub token is used from the shell on
 | R4-9 | Sarang.md README, screenshots, description, topics, push, release | GitHub | done (release v1.0.0, README, 17 topics, live on Vercel via main) |
 
 
+## Request 6: Vercel only, one address, downloads, accounts, helper (desktop 2.2.0 / web 1.10.0, Sarang.md 1.1.0 / 1.2.0)
+
+Decisions: two Vercel projects stay (`study-with-sarang`, `sarang.md`); `sarang-md.vercel.app/study-with-sarang/` shows Study; no GitHub for hosting, downloads or updates (the Helper also gets a GitHub Release copy); Speed Insights and Web Analytics stay; Supabase and env vars untouched; the textbook is published.
+
+| Step | What | Where | Status |
+| --- | --- | --- | --- |
+| R6-1 | Audit with the Vercel connector, report duplicates and inconsistencies | Vercel | done |
+| R6-2 | One address: Study path on `sarang-md.vercel.app`, redirects, suite links | both | done in code, deploy pending |
+| R6-3 | Download pages, feeds, checksums, in-app Get the app banner | `site/`, both apps | done, tested (`node site/test-site.mjs`) |
+| R6-4 | Update check from the website feed, update popup (desktop and web) | both apps | done, tested |
+| R6-5 | Setup says Study with Sarang (not Flow); Voice icon is the default | both apps | done |
+| R6-6 | Focus studio banner "Sarang.md outside the browser"; no scrollbars in Sarang.md | Sarang.md | done |
+| R6-7 | Forgot password, eight HTML email templates, invite user, Resend guide | both apps, `docs/EMAIL_AND_ACCOUNTS.md` | done, tested with a mock Supabase |
+| R6-8 | Study cleaner UI, also in full mode | Study | done |
+| R6-9 | Helper extension 1.1.0: new icon, real page, one-click pairing, guided install, shipped with each release | Study | done, tested without a real Chromium |
+| R6-10 | GitHub workflows retired, docs and READMEs moved to Vercel links | repos | done |
+| R6-11 | Release builds, deploy both sites, verify live URLs | Vercel | todo |
+
 ## Rules for every step
 
 - Everything is optional and finely adjustable. Nothing new is on by default if it could surprise someone (notifications and tutorial are on for first run, with a clear off switch).

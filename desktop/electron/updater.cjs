@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Update checks and the "Update now" flow. The installed app asks GitHub for the latest release, and when
+ * Update checks and the "Update now" flow. The installed app reads the update feed on the app's website, and when
  * the user agrees it downloads the new setup file, checks its SHA-256, then starts it in update mode and
  * quits. The setup window (the same animated installer) replaces the old files and reopens the app.
  */
@@ -23,7 +23,7 @@ function createUpdater({
     dismissed: false, repo: '', auto: true, configured: false, canSelfUpdate: false, canUpdate: false, disabled,
   };
 
-  const repo = () => core.cleanRepo(store.get().updateRepo) || core.cleanRepo(defaultRepo);
+  const repo = () => core.cleanFeed(store.get().updateRepo, net) || core.cleanFeed(defaultRepo, net);
   function publish(patch = {}) {
     Object.assign(state, patch);
     state.repo = repo(); state.auto = store.get().updateAuto; state.configured = Boolean(state.repo);
@@ -62,7 +62,7 @@ function createUpdater({
     if (!release.file) { if (state.htmlUrl) openExternal?.(state.htmlUrl); return publish(); }
     if (!canSelfUpdate()) { if (state.htmlUrl) openExternal?.(state.htmlUrl); return publish(); }
     const dir = installDir();
-    if (!dir) return publish({ status: 'error', error: 'This copy was not installed with the setup, so it cannot replace itself. Open the release page instead.' });
+    if (!dir) return publish({ status: 'error', error: 'This copy was not installed with the setup, so it cannot replace itself. Open the download page instead.' });
     busy = true; publish({ status: 'downloading', progress: 0, error: '' });
     try {
       const sha256 = await core.resolveHash(release.file, net);
@@ -96,8 +96,8 @@ function createUpdater({
   function setConfig(raw) {
     const patch = {};
     if (raw && typeof raw.repo === 'string') {
-      const cleaned = core.cleanRepo(raw.repo);
-      if (raw.repo.trim() && !cleaned) return publish({ error: 'Use the form owner/repository, for example sarang/study-with-sarang.' });
+      const cleaned = core.cleanFeed(raw.repo, net);
+      if (raw.repo.trim() && !cleaned) return publish({ error: 'Use a full https address on vercel.app, for example https://study-with-sarang.vercel.app/updates/latest.json.' });
       patch.updateRepo = cleaned; patch.updateSkip = '';
     }
     if (raw && typeof raw.auto === 'boolean') patch.updateAuto = raw.auto;

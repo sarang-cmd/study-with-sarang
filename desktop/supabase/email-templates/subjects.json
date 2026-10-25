@@ -4,5 +4,7 @@
   "recovery": "Reset your Study with Sarang password",
   "email_change": "Confirm your new Study with Sarang email address",
   "invite": "You are invited to Study with Sarang",
-  "reauthentication": "Your Study with Sarang security code: {{ .Token }}"
+  "reauthentication": "Your Study with Sarang security code: {{ .Token }}",
+  "identity_linked_notification": "A sign-in method was linked to your Study with Sarang account",
+  "identity_unlinked_notification": "A sign-in method was removed from your Study with Sarang account"
 }

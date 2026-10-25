@@ -35,7 +35,7 @@ const closeSettings = async (page) => { await page.click('[aria-label="Close set
   await openSettings(page, 'Appearance');
   const radios = page.locator('[data-testid="settings-panel"] [role="radiogroup"][aria-label="App icon"] [role="radio"]');
   assert.equal(await radios.count(), 8);
-  for (const [label, id] of [['Night', 'moon'], ['Ring', 'ring'], ['Paper', 'paper'], ['Waves', 'default']]) {
+  for (const [label, id] of [['Night', 'moon'], ['Ring', 'ring'], ['Paper', 'paper'], ['Waves', 'waves'], ['Voice', 'default']]) {
     await radios.filter({ hasText: label }).first().click(); await sleep(700);
     assert.equal(settingsFile().appIcon, id, `${id} stored by the shell`);
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('study-with-sarang:prefs')).appIcon), id);

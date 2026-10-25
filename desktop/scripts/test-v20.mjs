@@ -619,7 +619,7 @@ await ok('drift window reader: lines from the PowerShell reader become samples, 
 await ok('drift extension: manifest is valid and asks only for what it needs', () => {
   const m = JSON.parse(fs.readFileSync(`${root}extension/manifest.json`, 'utf8'));
   assert.equal(m.manifest_version, 3); assert.deepEqual(m.host_permissions, ['http://127.0.0.1/*']); assert.deepEqual([...m.permissions].sort(), ['alarms', 'storage', 'tabs']);
-  for (const f of [m.background.service_worker, m.options_page, 'icon48.png', 'icon128.png']) assert.ok(fs.existsSync(`${root}extension/${f}`), f);
+  for (const f of [m.background.service_worker, m.options_ui.page, m.action.default_popup, 'icon48.png', 'icon128.png']) assert.ok(fs.existsSync(`${root}extension/${f}`), f);
   const bg = fs.readFileSync(`${root}extension/background.js`, 'utf8'); assert.ok(!/https?:\/\/(?!127\.0\.0\.1)/.test(bg.replace(/`http:\/\/127\.0\.0\.1/g, '')), 'no other address');
   assert.ok(JSON.parse(fs.readFileSync(`${root}package.json`, 'utf8')).build.files.includes('extension/**/*'));
   const out = fs.mkdtempSync(`${require('node:os').tmpdir()}/ext-`); driftShell.exportExtension(`${root}extension`, out); assert.ok(fs.existsSync(`${out}/manifest.json`));

@@ -30,9 +30,9 @@ export function UpdatePrompt() {
         <p className="mt-2 text-[11px] text-muted">{update.status === 'launching' ? 'Starting the installer. The app closes and reopens by itself.' : `Downloading and checking the file, ${update.progress}%`}</p>
       </div> : <>
         {update.error && <p role="alert" className="mt-4 rounded-xl border border-line px-3 py-2 text-[11px]">{update.error}</p>}
-        {!can && <p className="mt-4 text-[11px] leading-relaxed text-muted">{update.canSelfUpdate ? 'This release has no Windows file attached.' : 'This copy cannot replace itself (it was not installed with the setup).'} Open the release page to download it.</p>}
+        {!can && <p className="mt-4 text-[11px] leading-relaxed text-muted">{update.canSelfUpdate ? 'This release has no Windows file attached.' : 'This copy cannot replace itself (it was not installed with the setup).'} Open the download page to get it.</p>}
         <div className="mt-5 flex flex-wrap gap-2">
-          <button ref={primary} type="button" className="studio-button studio-button-primary" onClick={() => void updateApi.install()}><Download size={13} />{can ? 'Update now' : 'Open release page'}</button>
+          <button ref={primary} type="button" className="studio-button studio-button-primary" onClick={() => void updateApi.install()}><Download size={13} />{can ? 'Update now' : 'Open download page'}</button>
           <button type="button" className="studio-button" onClick={() => void updateApi.dismiss()}>Later</button>
           <button type="button" className="studio-button" onClick={() => void updateApi.skip()}>Skip this version</button>
         </div>

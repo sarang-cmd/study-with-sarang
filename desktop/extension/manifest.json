@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Study with Sarang: browser helper",
-  "version": "1.0.0",
+  "name": "Study with Sarang Helper",
+  "version": "1.1.0",
   "description": "Tells the Study with Sarang desktop app, on this computer only, which website is open, so it can notice when you drift away from studying.",
   "permissions": ["tabs", "storage", "alarms"],
   "host_permissions": ["http://127.0.0.1/*"],
   "background": { "service_worker": "background.js" },
-  "options_page": "options.html",
-  "action": { "default_title": "Study with Sarang helper", "default_icon": { "48": "icon48.png" } },
-  "icons": { "48": "icon48.png", "128": "icon128.png" }
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "action": { "default_title": "Study with Sarang Helper", "default_popup": "popup.html", "default_icon": { "16": "icon16.png", "32": "icon32.png", "48": "icon48.png" } },
+  "icons": { "16": "icon16.png", "32": "icon32.png", "48": "icon48.png", "128": "icon128.png" }
 }

@@ -1,8 +1,11 @@
 'use strict';
 /**
- * Update logic without Electron: reading a GitHub release, choosing the right file, downloading it
- * and refusing anything that does not match its SHA-256. The network functions take their transport
- * and host rules as arguments, so tests can point them at a local server.
+ * Update logic without Electron: reading the update feed (a small JSON file the website publishes), choosing the
+ * right file, downloading it and refusing anything that does not match its SHA-256. The network functions take
+ * their transport and host rules as arguments, so tests can point them at a local server.
+ *
+ * The feed lives on the app's own website (Vercel), for example https://study-with-sarang.vercel.app/updates/latest.json:
+ *   { "app": "...", "version": "2.2.0", "notes": "...", "windows": { "file": "...exe", "url": "...", "size": 1, "sha256": "..." } }
  */
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -10,16 +13,21 @@ const http = require('node:http');
 const https = require('node:https');
 const path = require('node:path');
 
-const REPO = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100}$/;
 const ASSET = /^Study-with-Sarang-(\d+\.\d+\.\d+)\.exe$/;
 const HASH = /^[a-f0-9]{64}$/;
 const MAX_BYTES = 400 * 1024 * 1024;
-// GitHub serves release files from these hosts (after a redirect from github.com).
-const GITHUB_HOSTS = new Set(['api.github.com', 'github.com', 'objects.githubusercontent.com', 'release-assets.githubusercontent.com', 'github-releases.githubusercontent.com']);
+// The website and its downloads are served from Vercel. Anything else is refused unless a test passes its own rule.
+const allowedHost = (hostname) => /(^|\.)vercel\.app$/i.test(hostname);
 
-const cleanRepo = (value) => {
-  const text = String(value ?? '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\/+$/, '').replace(/\.git$/i, '');
-  return REPO.test(text) ? text : '';
+/** A feed address: https, an allowed host, no credentials. Returns the cleaned address or an empty string. */
+const cleanFeed = (value, { allow } = {}) => {
+  try {
+    const url = new URL(String(value ?? '').trim());
+    if (url.username || url.password) return '';
+    if (allow ? !allow(url) : url.protocol !== 'https:' || !allowedHost(url.hostname)) return '';
+    url.hash = '';
+    return url.toString();
+  } catch { return ''; }
 };
 
 /** "v1.2.3" or "1.2.3" to [1, 2, 3]; null when it is not a plain release number. */
@@ -34,27 +42,21 @@ function compare(a, b) {
   return 0;
 }
 
-const strictHttps = (url) => url.protocol === 'https:' && GITHUB_HOSTS.has(url.hostname);
+const strictHttps = (url) => url.protocol === 'https:' && allowedHost(url.hostname);
 
-/**
- * Picks the Windows file and its checksum from a release.
- * The checksum comes from GitHub's own "digest" field or from an uploaded "<file>.sha256" file.
- */
-function pickRelease(json) {
-  if (!json || typeof json !== 'object' || json.draft || json.prerelease) return null;
-  const version = parseVersion(json.tag_name);
+/** Reads the feed. Returns null when it is not a usable release. The checksum must be a 64-character SHA-256. */
+function pickRelease(json, feedUrl = '') {
+  if (!json || typeof json !== 'object') return null;
+  const version = parseVersion(json.version);
   if (!version) return null;
-  const assets = Array.isArray(json.assets) ? json.assets : [];
-  const file = assets.find((a) => a && typeof a.name === 'string' && ASSET.exec(a.name)?.[1] === version.join('.'));
-  const notes = typeof json.body === 'string' ? json.body.replace(/\r/g, '').trim().slice(0, 1500) : '';
-  const result = { version: version.join('.'), notes, htmlUrl: typeof json.html_url === 'string' ? json.html_url : '', file: null };
-  if (file) {
-    const digest = typeof file.digest === 'string' ? /^sha256:([a-f0-9]{64})$/i.exec(file.digest)?.[1]?.toLowerCase() : '';
-    const sumAsset = assets.find((a) => a && a.name === `${file.name}.sha256`);
-    result.file = {
-      name: file.name, url: String(file.browser_download_url ?? ''), size: Number.isFinite(file.size) ? file.size : 0,
-      sha256: digest || '', sumUrl: sumAsset ? String(sumAsset.browser_download_url ?? '') : '',
-    };
+  const notes = typeof json.notes === 'string' ? json.notes.replace(/\r/g, '').trim().slice(0, 1500) : '';
+  const resolve = (value) => { try { return new URL(String(value ?? ''), feedUrl || undefined).toString(); } catch { return ''; } };
+  const page = json.page ? resolve(json.page) : feedUrl ? resolve('/downloads') : '';
+  const result = { version: version.join('.'), notes, htmlUrl: page, file: null };
+  const w = json.windows;
+  if (w && typeof w === 'object' && ASSET.exec(String(w.file ?? ''))?.[1] === version.join('.')) {
+    const sha = typeof w.sha256 === 'string' ? w.sha256.toLowerCase() : '';
+    result.file = { name: w.file, url: resolve(w.url || w.file), size: Number.isFinite(w.size) ? w.size : 0, sha256: HASH.test(sha) ? sha : '', sumUrl: '' };
   }
   return result;
 }
@@ -64,7 +66,7 @@ function get(urlText, { allow = strictHttps, headers = {}, timeoutMs = 20000, ho
   return new Promise((resolve, reject) => {
     let url;
     try { url = new URL(urlText); } catch { reject(new Error('That is not a valid address.')); return; }
-    if (!allow(url)) { reject(new Error('The update address is not an allowed GitHub address.')); return; }
+    if (!allow(url)) { reject(new Error('The update address is not an allowed address.')); return; }
     const client = url.protocol === 'http:' ? http : https;
     const request = client.get(url, { headers: { 'User-Agent': 'Study-with-Sarang-updater', ...headers }, timeout: timeoutMs }, (response) => {
       const status = response.statusCode ?? 0;
@@ -87,15 +89,13 @@ async function readText(response, limit) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-async function fetchLatest(repo, opts = {}) {
-  const base = opts.apiBase || 'https://api.github.com';
-  const response = await get(`${base}/repos/${repo}/releases/latest`, { ...opts, headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } });
+async function fetchLatest(feed, opts = {}) {
+  const response = await get(feed, { ...opts, headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' } });
   if (response.statusCode === 404) { response.resume(); return { none: true }; }
-  if (response.statusCode === 403 || response.statusCode === 429) { response.resume(); throw new Error('GitHub is limiting requests right now. Try again in a little while.'); }
-  if (response.statusCode !== 200) { response.resume(); throw new Error(`GitHub answered ${response.statusCode}.`); }
+  if (response.statusCode !== 200) { response.resume(); throw new Error(`The update server answered ${response.statusCode}.`); }
   let json;
-  try { json = JSON.parse(await readText(response, 2 * 1024 * 1024)); } catch { throw new Error('GitHub sent an answer the app could not read.'); }
-  return { release: pickRelease(json) };
+  try { json = JSON.parse(await readText(response, 256 * 1024)); } catch { throw new Error('The update server sent an answer the app could not read.'); }
+  return { release: pickRelease(json, feed) };
 }
 
 async function resolveHash(file, opts = {}) {
@@ -110,7 +110,7 @@ async function resolveHash(file, opts = {}) {
 
 /** Downloads to `dest`, checks size, the "MZ" header and the SHA-256, and only then renames it into place. */
 async function download({ url, dest, sha256, size, onProgress, signal, ...opts }) {
-  if (!HASH.test(sha256 || '')) throw new Error('This release has no checksum, so the app will not install it.');
+  if (!HASH.test(sha256 || '')) throw new Error('This update has no checksum, so the app will not install it.');
   const response = await get(url, opts);
   if (response.statusCode !== 200) { response.resume(); throw new Error(`The download failed (${response.statusCode}).`); }
   const total = Number(response.headers['content-length']) || size || 0;
@@ -145,4 +145,4 @@ async function download({ url, dest, sha256, size, onProgress, signal, ...opts }
   return { file: dest, bytes: got };
 }
 
-module.exports = { cleanRepo, parseVersion, compare, pickRelease, fetchLatest, resolveHash, download, get, strictHttps, GITHUB_HOSTS, ASSET, MAX_BYTES };
+module.exports = { cleanFeed, parseVersion, compare, pickRelease, fetchLatest, resolveHash, download, get, strictHttps, allowedHost, ASSET, MAX_BYTES };

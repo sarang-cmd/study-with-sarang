@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, Menu, globalShortcut, ipcMain, nativeTheme, net, screen, shell, session, Notification } = require('electron');
+const { app, BrowserWindow, Menu, clipboard, globalShortcut, ipcMain, nativeTheme, net, screen, shell, session, Notification } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const common = require('./common.cjs');
@@ -10,7 +10,7 @@ const { createStore } = require('./settings.cjs');
 const { createShortcutManager, readKeyboardRepeat } = require('./shortcuts.cjs');
 const { createVoice } = require('./voice.cjs');
 const { createActivity } = require('./activity.cjs');
-const { createDrift, exportExtension } = require('./drift.cjs');
+const { createDrift, exportExtension, refreshExtension, browserCommand } = require('./drift.cjs');
 const { createDiscord } = require('./discord.cjs');
 const { createKeys } = require('./keys.cjs');
 const { createFlowKey } = require('./flowkey.cjs');
@@ -460,6 +460,7 @@ function boot({ first, loginLaunch }) {
     onState: (state) => send('swa:activity', state),
     onStatus: (status) => send('swa:activity-status', status),
   });
+  try { refreshExtension(path.join(__dirname, '..', 'extension'), path.join(common.userDataDir(), 'browser-helper')); } catch { /* Not critical: the helper folder is only refreshed when it exists. */ }
   drift = createDrift({
     dir: path.join(common.userDataDir(), 'drift'),
     scriptSource: () => fs.readFileSync(path.join(__dirname, 'drift-listener.ps1'), 'utf8'),
@@ -515,15 +516,15 @@ function toast(body) {
   } catch { /* Notifications are optional. */ }
 }
 function setupUpdater() {
-  // Development and tests can point the check at a local stand-in for GitHub. Packaged builds never can.
-  const test = !app.isPackaged && process.env.SWA_UPDATE_API ? { apiBase: process.env.SWA_UPDATE_API, allow: () => true } : {};
+  // Development and tests can point the check at a local stand-in for the update feed. Packaged builds never can.
+  const test = !app.isPackaged && process.env.SWA_UPDATE_API ? { feed: `${process.env.SWA_UPDATE_API}/updates/latest.json`, allow: () => true } : {};
   const pkg = (() => { try { return require('../package.json'); } catch { return {}; } })();
   updater = createUpdater({
-    version: app.getVersion(), store, net: test, defaultRepo: pkg.swaUpdate?.repo ?? '', disabled: Boolean(process.windowsStore),
+    version: app.getVersion(), store, net: test, defaultRepo: test.feed || pkg.swaUpdate?.feed || '', disabled: Boolean(process.windowsStore),
     send: (state) => { send('swa:update', state); refreshTray(); }, notify: toast,
-    openExternal: (url) => { if (/^https:\/\/github\.com\//.test(url)) void shell.openExternal(url); },
+    openExternal: (url) => { if (/^https:\/\/[a-z0-9.-]+\.vercel\.app\//i.test(url) || (test.feed && url.startsWith(process.env.SWA_UPDATE_API))) void shell.openExternal(url); },
     installDir: () => (!app.isPackaged && process.env.SWA_UPDATE_FAKE_INSTALL) || (installed() ? path.dirname(process.execPath) : null),
-    canSelfUpdate: () => installed() && isWin && !process.windowsStore || Boolean(test.apiBase && process.env.SWA_UPDATE_FAKE_INSTALL),
+    canSelfUpdate: () => installed() && isWin && !process.windowsStore || Boolean(test.feed && process.env.SWA_UPDATE_FAKE_INSTALL),
     quit: () => { quitting = true; app.quit(); },
     spawn: process.env.SWA_UPDATE_SPAWN_LOG && !app.isPackaged
       ? (command, args) => { fs.appendFileSync(process.env.SWA_UPDATE_SPAWN_LOG, `${JSON.stringify([command, args])}\n`); return { unref() {}, on() {} }; }
@@ -536,7 +537,7 @@ async function checkForUpdates() {
   showWindow();
   const state = await updater.check({ manual: true });
   if (state.status === 'uptodate') toast(`You have the latest version (${state.current}).`);
-  else if (state.status === 'unconfigured') toast('Set the GitHub repository in Settings, Window and updates, to check for updates.');
+  else if (state.status === 'unconfigured') toast('Set the update address in Settings, Window and updates, to check for updates.');
   else if (state.status === 'error') toast(`Update check failed: ${state.error}`);
 }
 
@@ -618,6 +619,19 @@ function registerIpc() {
   ipcMain.handle('swa:drift-extension', async (event) => {
     if (!trusted(event)) return null;
     try { const folder = exportExtension(path.join(__dirname, '..', 'extension'), path.join(common.userDataDir(), 'browser-helper')); await shell.openPath(folder); return folder; } catch (error) { return null; }
+  });
+  ipcMain.handle('swa:drift-pair', (event) => (trusted(event) ? drift.startPairing() : { ok: false }));
+  ipcMain.handle('swa:drift-install', (event, browser) => {
+    if (!trusted(event)) return null;
+    try {
+      const folder = exportExtension(path.join(__dirname, '..', 'extension'), path.join(common.userDataDir(), 'browser-helper'));
+      let copied = false; try { clipboard.writeText(folder); copied = true; } catch { /* No clipboard. */ }
+      const launch = browserCommand(String(browser), { platform: process.platform, env: process.env, exists: fs.existsSync });
+      let opened = false;
+      if (launch) { try { require('node:child_process').spawn(launch.command, launch.args, { detached: true, stdio: 'ignore' }).unref(); opened = true; } catch { /* Fall back to the folder. */ } }
+      if (!opened) void shell.openPath(folder);
+      return { folder, opened, copied };
+    } catch { return null; }
   });
   if (process.env.SWA_TEST === '1') ipcMain.on('swa:drift-test', (event, sample) => { if (trusted(event) && sample && typeof sample === 'object') drift.injectSample(sample); });
   ipcMain.on('swa:discord-update', (event, payload) => {

@@ -129,8 +129,10 @@ const hold = (page) => page.evaluate(() => document.activeElement && document.ac
   await panel(page).getByRole('radio', { name: /^Dot/i }).first().click(); await sleep(700);
   assert.equal(settingsFile().appIcon, 'classic')
   await panel(page).getByRole('radio', { name: /^Waves/i }).first().click(); await sleep(700);
+  assert.equal(settingsFile().appIcon, 'waves');
+  await panel(page).getByRole('radio', { name: /^Voice/i }).first().click(); await sleep(700);
   assert.equal(settingsFile().appIcon, 'default');
-  pass('the app icon switches between the waves and the dot');
+  pass('the app icon switches between the voice bars (the default), the waves and the dot');
 
   // ---- window buttons: native or custom
   await page.evaluate(() => window.desktop.setBehavior({ nativeControls: true })); await sleep(900);

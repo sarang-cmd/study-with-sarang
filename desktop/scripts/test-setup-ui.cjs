@@ -28,7 +28,7 @@ const active = (page) => page.evaluate(() => document.querySelector('.page.activ
 
 (async () => {
   let { app, page, problems } = await launch(['--setup']);
-  assert.equal(await active(page), 'p-welcome'); assert.match(await page.textContent('#h-welcome'), /Flow/);
+  assert.equal(await active(page), 'p-welcome'); assert.match(await page.textContent('#h-welcome'), /Study with\s*Sarang/);
   assert.equal(await page.evaluate(() => typeof require), 'undefined', 'no Node in the setup page');
   assert.deepEqual(await page.evaluate(() => Object.keys(window.setup).sort()), ['chooseDir', 'close', 'finish', 'info', 'install', 'minimize', 'onProgress', 'runPortable', 'uninstall']);
   pass('setup opens on the welcome page with a narrow bridge');

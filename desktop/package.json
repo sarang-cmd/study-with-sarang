@@ -1,7 +1,7 @@
 {
   "name": "study-with-sarang-desktop",
   "private": true,
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Study with Sarang for the desktop: a focus studio for students (IB, GCSE, IGCSE, CBSE, A Level, AP or your own subjects) with live ambient sound, goals and to-dos, statistics, a floating timer, drift detection, an AI assistant and a calendar link.",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit --pretty",
-    "test": "node scripts/test-audio.mjs && node scripts/test-mix.mjs && node scripts/test-tracking.mjs && node scripts/test-insights.mjs && node scripts/test-achievements.mjs && node scripts/test-media.mjs && node scripts/test-desktop.mjs && node scripts/test-cloud.mjs && node scripts/test-update.cjs && node scripts/test-shell.cjs && node scripts/test-keys.cjs && node scripts/test-installer.cjs && node scripts/test-v16.mjs && node scripts/test-v16.cjs && node scripts/test-recordings.mjs && node scripts/test-v17.mjs && node scripts/test-v17.cjs && node scripts/test-v20.mjs && node scripts/test-v21.mjs",
+    "test": "node scripts/test-audio.mjs && node scripts/test-mix.mjs && node scripts/test-tracking.mjs && node scripts/test-insights.mjs && node scripts/test-achievements.mjs && node scripts/test-media.mjs && node scripts/test-desktop.mjs && node scripts/test-cloud.mjs && node scripts/test-invite.mjs && node scripts/test-helper.cjs && node scripts/build-email-templates.mjs --check && node scripts/test-update.cjs && node scripts/test-shell.cjs && node scripts/test-keys.cjs && node scripts/test-installer.cjs && node scripts/test-v16.mjs && node scripts/test-v16.cjs && node scripts/test-recordings.mjs && node scripts/test-v17.mjs && node scripts/test-v17.cjs && node scripts/test-v20.mjs && node scripts/test-v21.mjs",
     "electron": "npm run build && electron . --no-sandbox",
     "desktop": "electron . --no-sandbox",
     "test:electron": "xvfb-run -a -s \"-screen 0 1600x1000x24\" node scripts/test-electron.cjs",
@@ -26,12 +26,13 @@
     "sounds:fetch": "node scripts/fetch-freesound.mjs",
     "sounds:list": "node scripts/fetch-freesound.mjs --list"
   },
-  "dependencies": {},
   "devDependencies": {
     "@radix-ui/react-slot": "^1.3.3",
     "@types/node": "^22.13.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
@@ -56,13 +57,18 @@
     "name": "Sarang",
     "url": "https://github.com/sarang-cmd"
   },
-  "homepage": "https://sarang-cmd.github.io/study-with-sarang/",
-  "repository": { "type": "git", "url": "git+https://github.com/sarang-cmd/study-with-sarang.git" },
-  "bugs": { "url": "https://github.com/sarang-cmd/study-with-sarang/issues" },
+  "homepage": "https://sarang-md.vercel.app/study-with-sarang/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarang-cmd/study-with-sarang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sarang-cmd/study-with-sarang/issues"
+  },
   "license": "UNLICENSED",
   "main": "electron/main.cjs",
   "swaUpdate": {
-    "repo": "sarang-cmd/study-with-sarang"
+    "feed": "https://study-with-sarang.vercel.app/updates/latest.json"
   },
   "build": {
     "appId": "com.sarang.studywithsarang",

@@ -4,6 +4,9 @@ import './index.css';
 import App from './App';
 import { lazy, Suspense } from 'react';
 import { bootSync, captureAuthHash } from './lib/cloud';
+import { startSiteStats } from './lib/siteStats';
+
+startSiteStats();
 
 // Signed-in users get the merged cloud copy before the first render. Everyone else renders at once.
 // An email link lands here with a token in the address; it is removed at once and checked before anything is trusted.

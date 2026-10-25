@@ -255,11 +255,17 @@ export function captureAuthHash(): Promise<void> {
   }
   const access = params.get('access_token') ?? '', refresh = params.get('refresh_token') ?? '', type = params.get('type') ?? '';
   if (!access || !refresh) return Promise.resolve();
-  if (!['signup', 'magiclink', 'invite'].includes(type) || !configured()) { announce({ kind: 'info', title: 'Link opened', message: 'Sign in with your email and password to continue.' }); return Promise.resolve(); }
+  if (!['signup', 'magiclink', 'invite', 'recovery'].includes(type) || !configured()) { announce({ kind: 'info', title: 'Link opened', message: 'Sign in with your email and password to continue.' }); return Promise.resolve(); }
   return http('/auth/v1/user', { token: access }).then(({ status, body }) => {
     const user = status === 200 && body && typeof body === 'object' ? (body as { id?: string; email?: string }) : null;
     if (!user?.id) { announce({ kind: 'error', title: 'That email link did not work', message: 'It may have expired. Request a new code and use that instead.' }); return; }
     const email = String(user.email ?? '').toLowerCase();
+    if (type === 'recovery' || type === 'invite') {
+      // The link proves the email address, so the person may choose a password now. Nothing is signed in until they do.
+      const expires = Number(params.get('expires_at')) || Math.floor(Date.now() / 1000) + (Number(params.get('expires_in')) || 3600);
+      startPasswordSetup(type, { accessToken: access, refreshToken: refresh, expiresAt: expires * 1000, user: { id: user.id, email } });
+      return;
+    }
     if (config.session) { announce({ kind: 'success', title: 'Email confirmed', message: 'You are already signed in.' }); return; }
     if (email && email === pendingEmail()) {
       const expires = Number(params.get('expires_at')) || Math.floor(Date.now() / 1000) + (Number(params.get('expires_in')) || 3600);
@@ -269,6 +275,48 @@ export function captureAuthHash(): Promise<void> {
     } else announce({ kind: 'success', title: 'Email confirmed', message: 'Now sign in with your email and password.' });
   }, () => announce({ kind: 'error', title: 'Could not finish', message: 'Check your connection, then sign in with your email and password.' }));
 }
+// ---- password reset and invitations ---------------------------------------------------------------
+export interface PasswordSetup { kind: 'recovery' | 'invite'; session: CloudSession }
+const SETUP_EVENT = 'sws:password-setup';
+let setup: PasswordSetup | null = null;
+function startPasswordSetup(kind: PasswordSetup['kind'], session: CloudSession) {
+  setup = { kind, session };
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(SETUP_EVENT, { detail: setup }));
+}
+export const currentPasswordSetup = () => setup;
+/** Calls back now if a link or code already started a password setup, then for later ones. Returns the unsubscribe function. */
+export function onPasswordSetup(callback: (setup: PasswordSetup | null) => void): () => void {
+  const listener = (event: Event) => callback((event as CustomEvent<PasswordSetup | null>).detail);
+  window.addEventListener(SETUP_EVENT, listener);
+  callback(setup);
+  return () => window.removeEventListener(SETUP_EVENT, listener);
+}
+export function cancelPasswordSetup() { setup = null; if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(SETUP_EVENT, { detail: null })); }
+/** Sends the reset email (a code and a link). The reply is always the same, so it never reveals whether an address has an account. */
+export async function requestPasswordReset(email: string) {
+  const { status, body } = await http(withRedirect('/auth/v1/recover'), { method: 'POST', body: JSON.stringify({ email: email.trim() }) });
+  if (status >= 400 && status !== 404) throw new CloudError(reason(body, 'Could not send the reset email.'), status);
+}
+/** Checks the code from the reset email and returns the short-lived session it proves. Nothing is signed in until a new password is saved with completePasswordSetup. */
+export async function verifyRecovery(email: string, token: string): Promise<CloudSession> {
+  const { status, body } = await http('/auth/v1/verify', { method: 'POST', body: JSON.stringify({ type: 'recovery', email: email.trim(), token: token.trim() }) });
+  const session = status === 200 ? adopt(body) : null;
+  if (!session) throw new CloudError(reason(body, 'That code did not work or has expired. Ask for a new one.'), status);
+  return session;
+}
+/** Saves the new password for the person whose link or code proved their address, then signs them in. */
+export async function completePasswordSetup(password: string, given?: CloudSession) {
+  const session = given ?? setup?.session;
+  if (!session) throw new CloudError('This link has already been used. Ask for a new one.');
+  if (password.length < 8) throw new CloudError('Use a password of at least 8 characters.');
+  const { status, body } = await http('/auth/v1/user', { method: 'PUT', token: session.accessToken, body: JSON.stringify({ password }) });
+  if (status >= 400) throw new CloudError(reason(body, 'Could not save the new password.'), status);
+  setup = null; rawRemove(PENDING_KEY);
+  begin(session);
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(SETUP_EVENT, { detail: null }));
+  void syncNow({ quiet: true }).catch(() => undefined);
+}
+
 export async function sendCode(email: string) {
   const { status, body } = await http('/auth/v1/otp', { method: 'POST', body: JSON.stringify({ email: email.trim(), create_user: true }) });
   if (status >= 400) throw new CloudError(reason(body, 'Could not send the code.'), status);

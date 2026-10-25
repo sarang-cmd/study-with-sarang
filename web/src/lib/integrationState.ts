@@ -13,9 +13,10 @@ export interface IntegrationState {
   driftWindow: string;                     // off | on | error | unsupported
   driftHelper: string;                     // off | listening | connected | error
   driftMessage: string;
+  driftPairing: boolean;                   // The app is waiting for the browser extension to ask for the pairing code
   driftNow: { label: string; verdict: string; why: string; seconds: number } | null; // What drift detection sees right now
 }
-const initial = (): IntegrationState => ({ activity: emptyActivity, activityStatus: 'off', activityMessage: '', holding: 'none', holdReason: '', discordStatus: 'off', discordDetail: '', driftWindow: 'off', driftHelper: 'off', driftMessage: '', driftNow: null });
+const initial = (): IntegrationState => ({ activity: emptyActivity, activityStatus: 'off', activityMessage: '', holding: 'none', holdReason: '', discordStatus: 'off', discordDetail: '', driftWindow: 'off', driftHelper: 'off', driftMessage: '', driftPairing: false, driftNow: null });
 let current = initial();
 const listeners = new Set<() => void>();
 export const getIntegrationState = () => current;

@@ -13,7 +13,7 @@ import { sanitizeLevel, sanitizeShow, type FeatureMap, type UiLevel } from './ui
 
 /** Display and feedback choices for this device. Kept in this browser (or this computer), never synced. */
 export type LayoutId = 'new' | 'legacy';
-import { isIconId, type IconId } from './iconSet';
+import { normalizeIconId, type IconId } from './iconSet';
 export type { IconId };
 export type Loudness = 'gentle' | 'balanced' | 'loud' | 'max';
 export const LOUDNESS_BOOST: Record<Loudness, number> = { gentle: 0, balanced: .8, loud: 1.6, max: 2.6 };
@@ -73,7 +73,7 @@ export function sanitizePrefs(raw: unknown): Prefs {
   const d = defaultPrefs;
   return {
     layout: r.layout === 'legacy' ? 'legacy' : r.layout === 'new' ? 'new' : d.layout,
-    appIcon: isIconId(r.appIcon) ? r.appIcon : 'default',
+    appIcon: normalizeIconId(r.appIcon),
     toasts: flag(r.toasts, d.toasts), uiSounds: flag(r.uiSounds, d.uiSounds), customScrollbar: flag(r.customScrollbar, d.customScrollbar), pauseKey: flag(r.pauseKey, d.pauseKey), mediaKeys: flag(r.mediaKeys, d.mediaKeys),
     zenGoal: flag(r.zenGoal, d.zenGoal), zenTask: flag(r.zenTask, d.zenTask), zenVisualizer: flag(r.zenVisualizer, d.zenVisualizer), zenControls: flag(r.zenControls, d.zenControls),
     achievements: flag(r.achievements, d.achievements), achievementToasts: flag(r.achievementToasts, d.achievementToasts),

@@ -6,7 +6,7 @@ It is for **IB Diploma** students (DP1 or DP2, May or November session) and equa
 
 **New here? Read `MASTER_GUIDE.md`.** It is the one long guide: install, every feature, every optional service, build, publish and troubleshoot. `CHANGELOG.md` lists everything that changed since the first version.
 
-**Download:** get the newest build from the [GitHub releases](https://github.com/sarang-cmd/study-with-sarang/releases/latest) or from the [landing page](https://sarang-cmd.github.io/study-with-sarang/). Source: [github.com/sarang-cmd/study-with-sarang](https://github.com/sarang-cmd/study-with-sarang). Part of the Sarang suite with [Sarang.md](https://github.com/sarang-cmd/sarang.md).
+**Download:** get the newest build from the [downloads page](https://sarang-md.vercel.app/study-with-sarang/downloads/). Everything is hosted on Vercel, with checksums and automatic updates. Part of the Sarang suite with [Sarang.md](https://sarang-md.vercel.app/).
 
 ## Screenshots
 

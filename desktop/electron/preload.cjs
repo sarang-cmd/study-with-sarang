@@ -32,6 +32,8 @@ contextBridge.exposeInMainWorld('desktop', {
   onDriftStatus: (callback) => on('swa:drift-status', callback),
   driftConfig: (config) => ipcRenderer.send('swa:drift-config', config),
   driftExtension: () => ipcRenderer.invoke('swa:drift-extension'),
+  driftPair: () => ipcRenderer.invoke('swa:drift-pair'),
+  driftInstall: (browser) => ipcRenderer.invoke('swa:drift-install', browser),
   driftTest: (sample) => ipcRenderer.send('swa:drift-test', sample),
   activityConfig: (config) => ipcRenderer.send('swa:activity-config', config),
   discordUpdate: (payload) => ipcRenderer.send('swa:discord-update', payload),

@@ -1,5 +1,7 @@
 # Sign-up emails: branded, working links, and reaching the inbox
 
+> Newer: forgot password, invitations, the two security notices and the Resend setup are in `docs/EMAIL_AND_ACCOUNTS.md` at the top of the repository. This page still explains the sign-up side.
+
 Everything here is done in the Supabase dashboard or with the scripts in this project. The app code cannot change dashboard settings, and nobody can promise an inbox: Gmail and others decide per message. What you can do is remove every reason for them to say no.
 
 Project reference: `fykzmhxvhdrxvqkkhlnd` (the built-in project).
@@ -9,7 +11,7 @@ Project reference: `fykzmhxvhdrxvqkkhlnd` (the built-in project).
 Supabase builds the link from **Site URL** (default `http://localhost:3000`) unless the app passes a `redirect_to` address that is on the **Redirect URLs** allow list. The web app now passes its own address, but Supabase only honors it when it is on the list, and otherwise falls back to Site URL.
 
 1. Dashboard, **Authentication, URL Configuration**.
-2. **Site URL**: the address where the web app is hosted, for example `https://yourname.github.io/study-with-sarang/`.
+2. **Site URL**: the address where the web app is hosted, for example `https://sarang-md.vercel.app/study-with-sarang` (no trailing slash).
 3. **Redirect URLs**: add the same address (with and without the trailing slash). Add `http://localhost:5173/*` if you test locally.
 4. The desktop app has no web address. It asks for the 6 digit code from the email instead, so nothing opens in a browser. If you host the web app, you can also set `WEB_URL` in `src/lib/cloudDefaults.ts` so desktop sign-ups point their link at it.
 

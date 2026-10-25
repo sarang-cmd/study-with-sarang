@@ -1,19 +1,43 @@
 <!doctype html>
-<meta charset="utf-8">
-<title>Study with Sarang helper</title>
-<style>
-  body { font: 15px/1.5 system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 20px; color: #111; }
-  h1 { font-size: 20px; } label { display: block; margin: 14px 0 4px; font-weight: 600; }
-  input[type=text], input[type=number] { width: 100%; padding: 8px 10px; border: 1px solid #bbb; border-radius: 8px; font: inherit; box-sizing: border-box; }
-  button { margin-top: 16px; padding: 8px 16px; border-radius: 999px; border: 1px solid #111; background: #111; color: #fff; font: inherit; cursor: pointer; }
-  small, #msg { color: #555; display: block; margin-top: 6px; } .row { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
-</style>
-<h1>Study with Sarang: browser helper</h1>
-<p>Open the desktop app, go to <b>Settings &gt; Drift detection</b>, turn on the browser helper and copy the pairing code here. Everything stays on this computer.</p>
-<label for="token">Pairing code</label><input id="token" type="text" autocomplete="off" spellcheck="false">
-<label for="port">Port</label><input id="port" type="number" min="1024" max="65535">
-<div class="row"><input id="enabled" type="checkbox"><label for="enabled" style="margin:0;font-weight:400">Report the open website</label></div>
-<div class="row"><input id="title" type="checkbox"><label for="title" style="margin:0;font-weight:400">Also report the page title (helps tell a lecture from a distraction)</label></div>
-<small>Private windows are never reported.</small>
-<button id="save">Save and test</button><span id="msg"></span>
-<script src="options.js"></script>
+<html lang="en"><head><meta charset="utf-8"><title>Study with Sarang Helper</title><link rel="stylesheet" href="ui.css">
+<style>main { max-width: 640px; margin: 36px auto 60px; padding: 0 20px; } .head { display: flex; align-items: center; gap: 14px; } .head img { width: 56px; height: 56px; border-radius: 14px; } .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; } details summary { cursor: pointer; font-weight: 600; }</style></head>
+<body><main>
+<div class="head"><img src="icon128.png" alt=""><div><h1>Study with Sarang Helper</h1><small id="ver"></small></div></div>
+<p style="margin-top:14px">A small helper for the <strong>Study with Sarang</strong> desktop app. It tells the app which website is open in this browser, so drift detection can tell a lecture from a distraction. It works on this computer only.</p>
+
+<section class="card" aria-labelledby="status-h"><h2 id="status-h">Status</h2>
+  <div class="pill" role="status"><span class="dot" id="dot"></span><span id="title">Checking...</span></div>
+  <p id="text" class="muted" style="margin-top:10px"></p>
+  <div class="actions"><button id="connect" hidden>Connect to the app</button><button id="recheck" class="secondary">Check again</button></div>
+  <p id="msg" role="status" class="muted" style="margin-top:10px"></p>
+</section>
+
+<section class="card" aria-labelledby="steps-h"><h2 id="steps-h">Set up in two steps</h2>
+  <ol>
+    <li>In Study with Sarang open <strong>Settings, Drift detection, Browser helper</strong>, switch it on and press <strong>Pair the extension</strong>.</li>
+    <li>Come back here and press <strong>Connect to the app</strong>. That is all. You do not need to copy any code.</li>
+  </ol>
+  <small>You need the desktop app for Windows or macOS. It is free at <a href="https://sarang-md.vercel.app/study-with-sarang/downloads/" target="_blank" rel="noreferrer">sarang-md.vercel.app/study-with-sarang/downloads</a>.</small>
+</section>
+
+<section class="card" aria-labelledby="set-h"><h2 id="set-h">Settings</h2>
+  <label class="row"><input id="enabled" type="checkbox"><span><strong>Report the open website</strong><br><small>Switch off to pause the helper without removing it.</small></span></label>
+  <label class="row"><input id="title-on" type="checkbox"><span><strong>Also report the page title</strong><br><small>Helps tell a lecture from a distraction. Off sends only the website name.</small></span></label>
+  <details style="margin-top:12px"><summary>Advanced: port and pairing code</summary>
+    <p class="muted" style="margin-top:8px">Only needed if you changed the port in the app or want to paste the code by hand.</p>
+    <label for="port"><strong>Port</strong></label><input id="port" type="number" min="1024" max="65535">
+    <label for="token" style="display:block;margin-top:10px"><strong>Pairing code</strong></label><input id="token" type="text" autocomplete="off" spellcheck="false">
+    <div class="actions"><button id="save" class="secondary">Save and test</button></div>
+  </details>
+</section>
+
+<section class="card" aria-labelledby="priv-h"><h2 id="priv-h">What it sends, and where</h2>
+  <p>The website name (for example <code>youtube.com</code>), the browser name, and the page title if you allow it, to <code>127.0.0.1</code>, which is this computer. Never to the internet. Private windows are never reported. The helper reads no page content and keeps no history.</p>
+</section>
+
+<section class="card" aria-labelledby="upd-h"><h2 id="upd-h">Updates</h2>
+  <p id="update" class="muted">Checking for a newer helper...</p>
+  <small>If you loaded the helper from the folder the app keeps for you, the app refreshes that folder after each update. Restart the browser, or press the reload arrow on the extensions page, to pick it up.</small>
+</section>
+</main>
+<script src="lib.js"></script><script src="options.js"></script></body></html>

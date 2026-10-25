@@ -26,6 +26,8 @@ export function buildPatch({ siteUrl, redirects = [], reauth = false } = {}) {
     patch[`mailer_subjects_${key}`] = subject;
     // Not every API version accepts a body for reauthentication, so that one is opt-in (--include-reauthentication).
     if (key !== 'reauthentication' || reauth) patch[`mailer_templates_${key}_content`] = fs.readFileSync(path.join(DIR, `${key}.html`), 'utf8');
+    // Security notices (sign-in method linked or removed) are sent only when their project-level switch is on.
+    if (key.endsWith('_notification')) patch[`mailer_notifications_${key.replace(/_notification$/, '')}_enabled`] = true;
   }
   if (siteUrl) patch.site_url = siteUrl;
   if (redirects.length) patch.uri_allow_list = redirects.join(',');

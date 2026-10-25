@@ -37,6 +37,8 @@ import { CommandPalette, type PaletteAction } from './components/CommandPalette'
 import { CustomScrollbar } from './components/CustomScrollbar';
 import { AppContextMenu } from './components/AppContextMenu';
 import { UpdatePrompt } from './components/UpdatePrompt';
+import { WebUpdatePrompt } from './components/WebUpdatePrompt';
+import { PasswordSetupDialog } from './components/PasswordSetupDialog';
 import Toaster from './components/ui/toast';
 import { getPrefs } from './lib/prefs';
 import { GoalCheck } from './components/GoalCheck';
@@ -61,7 +63,7 @@ import { FlowBridge } from './components/FlowBridge';
 import { AgentPanel } from './components/agent/AgentPanel';
 import { AiGuide } from './components/agent/AiGuide';
 import { Tutorial } from './components/Tutorial';
-import { DownloadCard } from './components/DownloadApp';
+import { DownloadBanner } from './components/DownloadApp';
 import { SUITE } from './lib/suite';
 import { beginWindDown, openCalm } from './lib/calmState';
 
@@ -215,12 +217,12 @@ function Studio() {
         {page === 'studio' && <>
           {f.heroStrip && <HeroStrip onZen={openZen} />}
           <div className={`${wide} pt-8`}>
+            <DownloadBanner className="mb-6" />
             <div className="grid items-start gap-6 xl:grid-cols-[1.08fr_.92fr]">
               <div className="grid gap-6"><FlowCard compact /><Soundscape />{f.neuralLock && <NeuralLock compact />}</div>
-              <TimerSection />
+              <div className="sticky-timer"><TimerSection /></div>
             </div>
             {layers}
-            <DownloadCard />
           </div>
         </>}
         {page === 'library' && <div className={`${wide} pt-4`}><MixLibrary />{f.videoPlaylist && <VideoPlaylist />}{f.studyRoom && <StudyRoomLibrary onZen={openZen} />}</div>}
@@ -229,9 +231,10 @@ function Studio() {
       </> : <>
         {f.heroStrip ? <Hero onZen={openZen} /> : <div className="pt-6" />}
         <div className={`${wide} pt-14`}>
+          <DownloadBanner className="mb-6" />
           <div className="grid items-start gap-6 xl:grid-cols-[1.08fr_.92fr]">
             <Soundscape />
-            <TimerSection />
+            <div className="sticky-timer"><TimerSection /></div>
           </div>
           {layers}
           {f.pageLibrary && <MixLibrary />}
@@ -242,14 +245,13 @@ function Studio() {
           {f.videoPlaylist && <VideoPlaylist />}
           {f.studyRoom && <StudyRoomLibrary onZen={openZen} />}
           {f.pageFocus && <FocusScience />}
-          <DownloadCard />
         </div>
       </>}
     </main>
     <footer className="border-t border-line px-5 py-6 text-[11px] text-muted sm:px-9 lg:px-12 xl:px-16 no-print">
       <div className="mx-auto flex max-w-[1160px] flex-wrap items-center justify-between gap-3">
         <p className={f.footerDetail ? '' : 'hidden'}><strong className="text-ink">Study with Sarang</strong> · a standalone focus studio. No account needed, no tracking. Cloud sync is optional and uses your own Supabase project.</p>
-        <p className="flex items-center gap-4"><button type="button" onClick={() => settings.openSettings()} className="font-semibold underline underline-offset-4">Settings</button><button type="button" onClick={() => setShortcuts(true)} className="font-semibold underline underline-offset-4">Keyboard shortcuts</button><a href={SUITE.md.siteUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">Sarang.md (IB maths)</a><a href={SUITE.study.repoUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">Source on GitHub</a><button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="font-semibold underline underline-offset-4">Back to top</button></p>
+        <p className="flex items-center gap-4"><button type="button" onClick={() => settings.openSettings()} className="font-semibold underline underline-offset-4">Settings</button><button type="button" onClick={() => setShortcuts(true)} className="font-semibold underline underline-offset-4">Keyboard shortcuts</button><a href={SUITE.md.siteUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">Sarang.md (IB maths)</a><a href={SUITE.study.downloadsUrl} className="font-semibold underline underline-offset-4">Downloads</a><button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="font-semibold underline underline-offset-4">Back to top</button></p>
       </div>
     </footer>
     <MediaSessionBridge />
@@ -260,6 +262,8 @@ function Studio() {
     <CalendarBridge />
     {isDesktop && <PuckBridge />}
     {isDesktop && <UpdatePrompt />}
+    {!isDesktop && <WebUpdatePrompt />}
+    <PasswordSetupDialog />
     {zen && <ZenView onClose={closeZen} />}
     {shortcuts && <ShortcutsDialog onClose={() => setShortcuts(false)} />}
     {palette && <CommandPalette actions={actions} onClose={() => setPalette(false)} />}

@@ -155,6 +155,34 @@ console.log('PASS errors, delete and sign out');
   assert.equal(e.isSignedIn(), true); assert.equal(e.getConfig().session.user.email, 'new@x.test');
   console.log('PASS built-in project and sign-up confirmation by code');
 
+  // Forgot password: the reply never reveals whether an address exists, the code is single use, and only a new password signs in
+  await e.signOut(); assert.equal(e.isSignedIn(), false);
+  await e.requestPasswordReset('nobody@x.test'); await e.requestPasswordReset('new@x.test');
+  assert.equal(flags.recoverCalls, 2, 'asking for a reset never fails for an unknown address'); assert.equal(flags.lastRedirect, 'https://study.example/app/');
+  await assert.rejects(e.verifyRecovery('new@x.test', '000000'), /did not work|expired/i);
+  const proven = await e.verifyRecovery('new@x.test', '246810');
+  assert.equal(e.isSignedIn(), false, 'a proven code alone does not sign anyone in');
+  await assert.rejects(e.verifyRecovery('new@x.test', '246810'), /did not work|expired/i, 'a reset code works once');
+  await assert.rejects(e.completePasswordSetup('short', proven), /at least 8/);
+  await e.completePasswordSetup('a brand new password', proven);
+  assert.equal(e.isSignedIn(), true); assert.equal(flags.passwordChanges, 1);
+  await e.signOut();
+  await assert.rejects(e.signIn('new@x.test', 'long password 1'), /Wrong email or password/);
+  await e.signIn('new@x.test', 'a brand new password'); assert.equal(e.isSignedIn(), true);
+  console.log('PASS forgot password: code, new password, old password no longer works');
+
+  // A reset or invitation link in the address bar opens the password setup instead of signing in
+  await e.signOut();
+  const resetUser = [...mock.users.values()].find((x) => x.email === 'new@x.test');
+  globalThis.location = { protocol: 'https:', hostname: 'study.example', origin: 'https://study.example', pathname: '/app/', search: '', hash: '' };
+  const hashFor = (type) => `#access_token=${mock.mintToken(resetUser)}&refresh_token=r-${type}&expires_in=3600&type=${type}`;
+  globalThis.location.hash = hashFor('recovery');
+  await e.captureAuthHash();
+  assert.equal(e.isSignedIn(), false, 'a recovery link does not sign in by itself'); assert.equal(e.currentPasswordSetup()?.kind, 'recovery'); assert.equal(globalThis.location.hash, '', 'the token is removed from the address');
+  await e.completePasswordSetup('chosen after the link'); assert.equal(e.isSignedIn(), true); assert.equal(e.currentPasswordSetup(), null);
+  await e.signOut(); globalThis.location.hash = hashFor('invite'); await e.captureAuthHash(); assert.equal(e.currentPasswordSetup()?.kind, 'invite'); e.cancelPasswordSetup(); assert.equal(e.currentPasswordSetup(), null); assert.equal(e.isSignedIn(), false);
+  console.log('PASS reset and invite links open the password setup');
+
   // The desktop app and local previews are not valid link targets
   for (const [hostname, origin, protocol] of [['app.study-with-sarang.localhost', 'http://app.study-with-sarang.localhost:5173', 'http:'], ['localhost', 'http://localhost:5173', 'http:'], ['', 'null', 'file:']]) {
     globalThis.location = { protocol, hostname, origin, pathname: '/', search: '', hash: '' };
@@ -189,8 +217,9 @@ console.log('PASS errors, delete and sign out');
   // a forged token is rejected by the server
   out = await land(G, '#access_token=forged&refresh_token=rt&type=signup');
   assert.equal(out.mod.isSignedIn(), false); assert.equal(out.got[0].kind, 'error');
-  // recovery links are never adopted
-  out = await land(F, '#access_token=at-link&refresh_token=rt-link&type=recovery'); assert.equal(out.got[0].kind, 'info');
+  // a recovery link is never adopted as a sign-in: it only opens the password setup, for a token the server confirms
+  out = await land(G, '#access_token=at-link&refresh_token=rt-link&type=recovery'); assert.equal(out.mod.isSignedIn(), false); assert.equal(out.mod.currentPasswordSetup()?.kind, 'recovery'); out.mod.cancelPasswordSetup();
+  out = await land(G, '#access_token=forged&refresh_token=rt&type=recovery'); assert.equal(out.mod.currentPasswordSetup(), null); assert.equal(out.got[0].kind, 'error');
   // an expired link shows a friendly message and clears the address
   out = await land(G, '#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired');
   assert.equal(out.hashAfter, ''); assert.equal(out.got[0].kind, 'error'); assert.match(out.got[0].message, /new code/);

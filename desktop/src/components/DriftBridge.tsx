@@ -83,9 +83,9 @@ export function DriftBridge() {
     if (!api) return;
     const off = [
       api.onDriftSample((sample) => tracker.current?.feed(sample)),
-      api.onDriftStatus((status) => patchIntegrationState({ driftWindow: status.window, driftHelper: status.helper, driftMessage: status.message })),
+      api.onDriftStatus((status) => patchIntegrationState({ driftWindow: status.window, driftHelper: status.helper, driftMessage: status.message, driftPairing: status.pairing === true })),
     ];
-    void api.integrationStatus().then((status) => { if (status?.drift) patchIntegrationState({ driftWindow: status.drift.window, driftHelper: status.drift.helper, driftMessage: status.drift.message }); });
+    void api.integrationStatus().then((status) => { if (status?.drift) patchIntegrationState({ driftWindow: status.drift.window, driftHelper: status.drift.helper, driftMessage: status.drift.message, driftPairing: status.drift.pairing === true }); });
     return () => off.forEach((fn) => fn());
   }, []);
 

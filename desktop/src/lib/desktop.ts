@@ -14,7 +14,7 @@ export interface VoiceDiagnosis {
   micUser?: string; micMachine?: string; micDesktopApps?: string; inputDevices?: string[];
 }
 export interface ActivityReport { mic: string[]; recorders: string[]; media: string[] }
-export interface DriftStatus { window: string; helper: string; message: string }
+export interface DriftStatus { window: string; helper: string; message: string; pairing?: boolean }
 export interface IntegrationStatus { activity: { supported: boolean; status: string }; drift?: DriftStatus & { supported: boolean }; discord: { status: string } }
 export interface MonitorInfo { key: string; id: number; name: string; nickname: string; natural: string; width: number; height: number; scale: number; primary: boolean; internal: boolean; current: boolean; where: '' | 'left' | 'right' | 'above' | 'below'; x: number; y: number }
 export type MonitorThen = string; // none, zen, zen-full, zen-off, compact, expand or snap:<layout>
@@ -76,6 +76,8 @@ export interface DesktopBridge {
   onDriftStatus(callback: (status: DriftStatus) => void): () => void;
   driftConfig(config: { enabled: boolean; window: boolean; helper: boolean; port: number; token: string }): void;
   driftExtension(): Promise<string | null>;
+  driftPair(): Promise<{ ok: boolean; why?: string; until?: number }>;
+  driftInstall(browser: 'chrome' | 'edge' | 'brave'): Promise<{ folder: string; opened: boolean; copied: boolean } | null>;
   driftTest(sample: { src: 'window' | 'tab'; app: string; title: string; host: string; browser?: string }): void;
   discordUpdate(payload: { config: { enabled: boolean; appId: string }; activity: unknown }): void;
   onDiscordStatus(callback: (status: { status: string; detail: string }) => void): () => void;
