@@ -4,7 +4,7 @@
 
 The Store signs the package for you, so there is no SmartScreen warning and updates are handled for you. It cannot be built on Linux, so this is a short job on your Windows PC.
 
-1. Register a Microsoft Partner Center developer account (a one-time fee for individuals) and reserve the name **Study with Sarang**.
+1. Register a free Microsoft Store developer account (individuals pay no fee; start at storedeveloper.microsoft.com, the only entry point that skips the old fee; you need a government ID and a selfie) and reserve the name **Study with Sarang**.
 2. In Partner Center open **Product identity** and copy the *Package/Identity/Name* and *Package/Identity/Publisher* values.
 3. Put them in `package.json` under `build.appx` (`identityName` and `publisher`, replacing the two REPLACE_WITH values).
 4. `npm install`, then `npm run dist:store`. This creates `release/Study-with-Sarang-<version>.appx`. The tile images in `assets/appx` are already generated.
