@@ -65,7 +65,7 @@ Decisions: two Vercel projects stay (`study-with-sarang`, `sarang.md`); `sarang-
 | Step | What | Where | Status |
 | --- | --- | --- | --- |
 | R6-1 | Audit with the Vercel connector, report duplicates and inconsistencies | Vercel | done |
-| R6-2 | One address: Study path on `sarang-md.vercel.app`, redirects, suite links | both | done in code, deploy pending |
+| R6-2 | One address: Study path on `sarang-md.vercel.app`, redirects, suite links | both | done and live |
 | R6-3 | Download pages, feeds, checksums, in-app Get the app banner | `site/`, both apps | done, tested (`node site/test-site.mjs`) |
 | R6-4 | Update check from the website feed, update popup (desktop and web) | both apps | done, tested |
 | R6-5 | Setup says Study with Sarang (not Flow); Voice icon is the default | both apps | done |
@@ -74,7 +74,7 @@ Decisions: two Vercel projects stay (`study-with-sarang`, `sarang.md`); `sarang-
 | R6-8 | Study cleaner UI, also in full mode | Study | done |
 | R6-9 | Helper extension 1.1.0: new icon, real page, one-click pairing, guided install, shipped with each release | Study | done, tested without a real Chromium |
 | R6-10 | GitHub workflows retired, docs and READMEs moved to Vercel links | repos | done |
-| R6-11 | Release builds, deploy both sites, verify live URLs | Vercel | todo |
+| R6-11 | Release builds, deploy both sites, verify live URLs | Vercel | done (live 2026-10-25; bridge GitHub releases v2.2.0 and v1.1.0 for old installs) |
 
 ## Rules for every step
 
