@@ -4,8 +4,8 @@
     "webNotes": "A Get the app banner and a real download page, a cleaner Studio with the timer kept in view, forgot password, invitations and branded emails, and an update note when a newer page is out."
   },
   "md": {
-    "notes": "New: the Ask orb is the front door of the AI Socratic tutor, with live hints from your own provider key. The textbook now covers every topic: 83 chapters including Statistics and Probability and Calculus. 66 new long-form practice questions come with M, A and R mark schemes (written independently, not IB mark schemes).",
-    "webNotes": "The Ask orb for the Socratic tutor, all 83 textbook chapters (new Units 4 and 5) and 66 long-form questions with detailed mark schemes."
+    "notes": "Fix: the buttons in the Ask orb (send, close, Ask another) now respond to real clicks, and the orb is centred. Earlier in 1.2.0: the Ask orb as the front door of the AI Socratic tutor, all 83 textbook chapters and 66 long-form questions (written independently, not IB mark schemes).",
+    "webNotes": "Ask orb fix: the send, close and Ask another buttons work, and the orb is centred."
   },
   "helper": {
     "notes": "A new icon, a real settings page and a popup, one-click pairing with the app (no code to copy), install buttons in the app for Chrome, Edge and Brave, and automatic refresh of the helper folder after each app update."
