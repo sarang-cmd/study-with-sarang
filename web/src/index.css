@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --canvas: 255 255 255;
+  --surface: 250 250 250;
+  --raised: 243 243 243;
+  --ink: 22 22 22;
+  --muted: 107 107 107;
+  --faint: 153 153 153;
+  --line: 226 226 226;
+  --accent: 23 23 23;
+  --accent-ink: 255 255 255;
+}
+
+.dark {
+  color-scheme: dark;
+  --canvas: 11 11 11;
+  --surface: 20 20 20;
+  --raised: 31 31 31;
+  --ink: 243 243 243;
+  --muted: 165 165 165;
+  --faint: 111 111 111;
+  --line: 54 54 54;
+  --accent: 244 244 244;
+  --accent-ink: 17 17 17;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(88px + var(--titlebar, 0px)); }
+body { @apply m-0 min-w-[320px] bg-canvas font-sans text-ink antialiased; }
+body, header, aside, main, footer { transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease; }
+::selection { background: rgb(var(--ink) / 0.16); color: rgb(var(--ink)); }
+:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; }
+input[type='text']:focus-visible, input[type='url']:focus-visible, input[type='number']:focus-visible, select:focus-visible { outline-offset: 1px; }
+input[type='range'] { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+button:not(:disabled), summary { cursor: pointer; }
+
+@layer components {
+  .section-label { @apply font-mono text-[10px] font-semibold uppercase tracking-[0.17em] text-muted; }
+}
+
+.studio-button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 7px; border: 1px solid rgb(var(--line)); border-radius: 999px; background: rgb(var(--canvas)); padding: 7px 13px; color: rgb(var(--ink)); font-size: 11px; font-weight: 650; transition: background-color .18s ease, border-color .18s ease; }
+.studio-button:hover:not(:disabled) { border-color: rgb(var(--ink)); background: rgb(var(--raised)); }
+.studio-button:disabled { opacity: .45; }
+.studio-button.studio-button-primary { border-color: rgb(var(--ink)); background: rgb(var(--ink)); color: rgb(var(--canvas)); }
+.studio-button.studio-button-primary:hover:not(:disabled) { background: rgb(var(--ink)); opacity: .86; }
+.studio-button[aria-pressed='true'] { border-color: rgb(var(--ink)); background: rgb(var(--ink)); color: rgb(var(--canvas)); }
+.field { width: 100%; min-height: 40px; border: 1px solid rgb(var(--line)); border-radius: 8px; background: rgb(var(--canvas)); padding: 8px 12px; color: rgb(var(--ink)); font-size: 12px; }
+.field::placeholder { color: rgb(var(--faint)); }
+.field:focus { border-color: rgb(var(--muted)); }
+select.field { appearance: auto; }
+
+/* The sound board's small details. */
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary .chevron { transform: rotate(180deg); }
+.chevron { transition: transform .18s ease; }
+
+@keyframes quiet-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.arrive { animation: quiet-arrive 220ms ease-out both; }
+@keyframes idle-bar { 0%, 100% { transform: scaleY(.35); } 50% { transform: scaleY(1); } }
+.eq-bar { transform-origin: bottom; }
+.eq-playing .eq-bar { animation: idle-bar 1.1s ease-in-out infinite; }
+
+.zen-clock { font-variant-numeric: tabular-nums; letter-spacing: -.06em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+@media print { header, footer, .no-print { display: none !important; } }
+
+/* ---- Desktop app shell ------------------------------------------------------------------ */
+.drag { -webkit-app-region: drag; }
+.no-drag { -webkit-app-region: no-drag; }
+html.titlebar body { padding-top: var(--titlebar, 0px); }
+html.compact body { padding-top: 0; overflow: hidden; }
+html.desktop body { overscroll-behavior: none; }
+html.desktop .drag { user-select: none; }
+
+/* Mica (Windows 11) and vibrancy (macOS) show through when the page is translucent. */
+html.glass, html.glass body { background-color: transparent; }
+html.glass .bg-canvas, html.glass .bg-canvas\/95 { background-color: rgb(var(--canvas) / .66); }
+html.glass .bg-surface { background-color: rgb(var(--surface) / .5); }
+html.glass .bg-raised { background-color: rgb(var(--raised) / .6); }
+html.glass .studio-button, html.glass .field { background-color: rgb(var(--canvas) / .5); }
+html.glass header, html.glass .drag { -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5); }
+html.glass .shadow-float { background-color: rgb(var(--canvas) / .94) !important; -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
+html.glass.compact .bg-canvas { background-color: rgb(var(--canvas) / .78); }
+
+/* Right-click menu */
+@keyframes ctx-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+.ctx-menu { animation: ctx-in 0.12s ease-out; transform-origin: top left; }
+@media (prefers-reduced-motion: reduce) { .ctx-menu { animation: none; } }
+
+/* Scrollbars: the page uses its own bar (CustomScrollbar), everything else gets a quiet themed one. */
+html.scrollbar-custom { scrollbar-width: none; }
+html.scrollbar-custom::-webkit-scrollbar { display: none; }
+*::-webkit-scrollbar { width: 11px; height: 11px; }
+*::-webkit-scrollbar-track, *::-webkit-scrollbar-corner { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgb(var(--faint) / .5); border: 3px solid transparent; border-radius: 999px; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted) / .75); background-clip: padding-box; border: 3px solid transparent; }
+
+/* Interface level "Simple": quieter pages. Nothing is removed from the app, only the extra explanations go. */
+html[data-ui='simple'] .section-label, html[data-ui='simple'] .calm-hide { display: none; }
+
+/* The study room: Zen over a video always uses light text on a dark ground, whatever the theme. */
+.room-on {
+  --canvas: 11 11 11; --surface: 20 20 20; --raised: 40 40 40; --ink: 245 245 245; --muted: 205 205 205; --faint: 170 170 170; --line: 110 110 110; --accent: 244 244 244; --accent-ink: 17 17 17;
+  color: rgb(var(--ink));
+}
+.room-on .room-shadow { text-shadow: 0 2px 18px rgb(0 0 0 / .55); }
+.room-on .room-glass { background: rgb(0 0 0 / .38); backdrop-filter: blur(6px); }

@@ -1,0 +1,43 @@
+{
+  "name": "study-with-sarang",
+  "private": true,
+  "version": "1.9.1",
+  "description": "A focus studio for students (IB, GCSE, IGCSE, CBSE, A Level, AP or your own subjects): ambient sound with Flow, a timer with goals and to-dos, statistics, an optional AI helper. No account needed.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "prebuild": "node scripts/sounds-manifest.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit --pretty",
+    "emails": "node scripts/build-email-templates.mjs",
+    "emails:check": "node scripts/build-email-templates.mjs --check",
+    "test": "node scripts/test-audio.mjs && node scripts/test-mix.mjs && node scripts/test-tracking.mjs && node scripts/test-insights.mjs && node scripts/test-achievements.mjs && node scripts/test-media.mjs && node scripts/test-cloud.mjs && node scripts/test-v16.mjs && node scripts/test-recordings.mjs && node scripts/test-v17.mjs && node scripts/test-v20.mjs && node scripts/test-v21.mjs",
+    "sounds": "node scripts/sounds-manifest.mjs",
+    "sounds:fetch": "node scripts/fetch-freesound.mjs",
+    "sounds:list": "node scripts/fetch-freesound.mjs --list"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.3.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^13.4.4",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "esbuild": "^0.25.12",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0"
+  }
+}

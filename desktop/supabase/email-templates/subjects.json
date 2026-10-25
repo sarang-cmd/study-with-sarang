@@ -1,0 +1,8 @@
+{
+  "confirmation": "Your Study with Sarang code: {{ .Token }}",
+  "magic_link": "Your Study with Sarang sign-in code: {{ .Token }}",
+  "recovery": "Reset your Study with Sarang password",
+  "email_change": "Confirm your new Study with Sarang email address",
+  "invite": "You are invited to Study with Sarang",
+  "reauthentication": "Your Study with Sarang security code: {{ .Token }}"
+}

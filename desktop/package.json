@@ -1,0 +1,160 @@
+{
+  "name": "study-with-sarang-desktop",
+  "private": true,
+  "version": "2.1.1",
+  "description": "Study with Sarang for the desktop: a focus studio for students (IB, GCSE, IGCSE, CBSE, A Level, AP or your own subjects) with live ambient sound, goals and to-dos, statistics, a floating timer, drift detection, an AI assistant and a calendar link.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "prebuild": "node scripts/sounds-manifest.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit --pretty",
+    "test": "node scripts/test-audio.mjs && node scripts/test-mix.mjs && node scripts/test-tracking.mjs && node scripts/test-insights.mjs && node scripts/test-achievements.mjs && node scripts/test-media.mjs && node scripts/test-desktop.mjs && node scripts/test-cloud.mjs && node scripts/test-update.cjs && node scripts/test-shell.cjs && node scripts/test-keys.cjs && node scripts/test-installer.cjs && node scripts/test-v16.mjs && node scripts/test-v16.cjs && node scripts/test-recordings.mjs && node scripts/test-v17.mjs && node scripts/test-v17.cjs && node scripts/test-v20.mjs && node scripts/test-v21.mjs",
+    "electron": "npm run build && electron . --no-sandbox",
+    "desktop": "electron . --no-sandbox",
+    "test:electron": "xvfb-run -a -s \"-screen 0 1600x1000x24\" node scripts/test-electron.cjs",
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "checksum": "node scripts/checksum.cjs",
+    "sign": "node scripts/sign-exe.cjs",
+    "emails": "node scripts/build-email-templates.mjs",
+    "emails:check": "node scripts/build-email-templates.mjs --check",
+    "dist:mac": "npm run build && electron-builder --mac --universal",
+    "dist:store": "npm run build && electron-builder --win appx --x64",
+    "test:ui": "xvfb-run -a -s \"-screen 0 1600x1000x24\" sh -c \"export SWA_NO_TOUR=1 SWA_CLASSIC=1; node scripts/test-electron.cjs && node scripts/test-ui14.cjs && node scripts/test-ui15.cjs && node scripts/test-features.cjs && node scripts/test-update-ui.cjs && node scripts/test-setup-ui.cjs && node scripts/test-ui16.cjs && node scripts/test-ui17.cjs && node scripts/test-ui20.cjs && node scripts/test-ui21.cjs && node scripts/test-ui22.cjs && node scripts/test-ui23.cjs && node scripts/test-ui24.cjs && node scripts/test-ui25.cjs && node scripts/test-ui26.cjs && node scripts/test-ui27.cjs && xvfb-run -a -s \"-screen 0 1500x1000x24\" node scripts/test-ui28.cjs && xvfb-run -a -s \"-screen 0 1500x1000x24\" node scripts/test-ui29.cjs && env -u SWA_CLASSIC xvfb-run -a -s \"-screen 0 1500x1000x24\" node scripts/test-ui30.cjs\"",
+    "sounds": "node scripts/sounds-manifest.mjs",
+    "sounds:fetch": "node scripts/fetch-freesound.mjs",
+    "sounds:list": "node scripts/fetch-freesound.mjs --list"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@radix-ui/react-slot": "^1.3.3",
+    "@types/node": "^22.13.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "electron": "^41.7.1",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.25.12",
+    "framer-motion": "^13.4.4",
+    "lucide-react": "^0.468.0",
+    "playwright-core": "^1.63.0",
+    "postcss": "^8.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "resedit": "^3.1.0",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0"
+  },
+  "author": {
+    "name": "Sarang",
+    "url": "https://github.com/sarang-cmd"
+  },
+  "homepage": "https://sarang-cmd.github.io/study-with-sarang/",
+  "repository": { "type": "git", "url": "git+https://github.com/sarang-cmd/study-with-sarang.git" },
+  "bugs": { "url": "https://github.com/sarang-cmd/study-with-sarang/issues" },
+  "license": "UNLICENSED",
+  "main": "electron/main.cjs",
+  "swaUpdate": {
+    "repo": "sarang-cmd/study-with-sarang"
+  },
+  "build": {
+    "appId": "com.sarang.studywithsarang",
+    "productName": "Study with Sarang",
+    "copyright": "Copyright 2026 Sarang",
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron/**/*",
+      "extension/**/*",
+      "dist/**/*",
+      "assets/icon.svg",
+      "assets/icon.png",
+      "assets/icon.ico",
+      "assets/tray*.png",
+      "assets/icons/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "electronLanguages": [
+      "en-US",
+      "de"
+    ],
+    "compression": "normal",
+    "afterPack": "scripts/after-pack.cjs",
+    "protocols": [
+      {
+        "name": "Study with Sarang",
+        "schemes": [
+          "study-with-sarang"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false,
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "portable": {
+      "artifactName": "Study-with-Sarang-${version}.exe",
+      "requestExecutionLevel": "user"
+    },
+    "appx": {
+      "applicationId": "StudyWithSarang",
+      "identityName": "REPLACE_WITH_PARTNER_CENTER_IDENTITY_NAME",
+      "publisher": "CN=REPLACE_WITH_PARTNER_CENTER_PUBLISHER_ID",
+      "publisherDisplayName": "Sarang",
+      "displayName": "Study with Sarang",
+      "backgroundColor": "#0a0a0a",
+      "languages": [
+        "en-US",
+        "de-DE"
+      ],
+      "artifactName": "Study-with-Sarang-${version}.appx"
+    },
+    "mac": {
+      "category": "public.app-category.education",
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Voice commands are not available on macOS, but Chromium may still ask for the microphone.",
+        "LSUIElement": false
+      }
+    },
+    "dmg": {
+      "title": "Study with Sarang",
+      "artifactName": "Study-with-Sarang-${version}-mac.${ext}"
+    }
+  }
+}

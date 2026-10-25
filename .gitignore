@@ -1,0 +1,14 @@
+node_modules/
+dist/
+release/
+releases/
+*.pfx
+*.cer
+signing/
+PASSWORD.txt
+.env
+.env.*
+!.env.example
+*.zip
+*.log
+.DS_Store

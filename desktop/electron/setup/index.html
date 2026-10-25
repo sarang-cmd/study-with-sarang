@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' file: data:;">
+  <title>Study with Sarang Setup</title>
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <canvas id="waves" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="bar drag">
+    <div class="brand"><img src="../../assets/icon.svg" alt="" width="20" height="20"><span id="bar-title">Study with Sarang</span></div>
+    <div class="steps" id="steps" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="win no-drag">
+      <button type="button" id="min" aria-label="Minimize">&#8211;</button>
+      <button type="button" id="close" aria-label="Close">&#10005;</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. Welcome -->
+    <section class="page active" id="p-welcome" aria-labelledby="h-welcome">
+      <img class="mark" src="../../assets/icon.svg" alt="" width="96" height="96">
+      <p class="kicker" id="welcome-kicker">SETUP / VERSION <span id="ver">1.0</span></p>
+      <h1 id="h-welcome">Flow<span class="dot">.</span></h1>
+      <p class="lede" id="welcome-lede">Ambient sound, a focus timer and a calm place to work. Installs for you only, in about ten seconds, with no admin rights.</p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="go-install">Install</button>
+        <button type="button" class="btn" id="go-options">Customize</button>
+      </div>
+      <button type="button" class="link" id="go-portable">Run once without installing</button>
+    </section>
+
+    <!-- 2. Options -->
+    <section class="page" id="p-options" aria-labelledby="h-options">
+      <p class="kicker">STEP 2 / MAKE IT YOURS</p>
+      <h2 id="h-options">How should it live on your PC?</h2>
+      <div class="options">
+        <label class="opt"><span><b>Desktop shortcut</b><small>An icon on your desktop.</small></span><input type="checkbox" id="o-desktop" checked><i class="sw" aria-hidden="true"></i></label>
+        <label class="opt"><span><b>Start menu</b><small>Find it by typing "Study" in Start.</small></span><input type="checkbox" id="o-start" checked><i class="sw" aria-hidden="true"></i></label>
+        <label class="opt"><span><b>Open when I sign in</b><small>Ready before you sit down.</small></span><input type="checkbox" id="o-login" checked><i class="sw" aria-hidden="true"></i></label>
+        <label class="opt"><span><b>Start hidden at sign-in</b><small>Wait in the tray until you call it.</small></span><input type="checkbox" id="o-hidden"><i class="sw" aria-hidden="true"></i></label>
+      </div>
+      <div class="where"><div><small>INSTALL FOLDER</small><code id="o-dir"></code></div><button type="button" class="btn small" id="o-browse">Change</button></div>
+      <p class="error" id="o-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" class="btn" id="o-back">Back</button><button type="button" class="btn primary" id="o-install">Install</button></div>
+    </section>
+
+    <!-- 3. Installing -->
+    <section class="page" id="p-working" aria-labelledby="h-working">
+      <p class="kicker" id="work-kicker">INSTALLING</p>
+      <h2 id="h-working" class="sr">Installing</h2>
+      <div class="percent" aria-live="off"><span id="pct">0</span><em>%</em></div>
+      <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="track"><div id="fill"></div></div>
+      <p class="status" id="status" role="status">Getting ready</p>
+      <p class="files" id="files">&nbsp;</p>
+    </section>
+
+    <!-- 4. Done -->
+    <section class="page" id="p-done" aria-labelledby="h-done">
+      <div class="check" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="M15 27l8 8 15-17"/></svg></div>
+      <h2 id="h-done">You are all set.</h2>
+      <ul class="tips" id="tips">
+        <li><b>Look for the wave</b> in your system tray. Click it to show or hide the window.</li>
+        <li><b>Ctrl + Alt + Shift + Space</b> plays or pauses from any app.</li>
+        <li><b>Stream Deck?</b> Settings, Keys shows the exact button setup.</li>
+      </ul>
+      <p class="error" id="d-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" class="btn primary" id="d-open">Open Study with Sarang</button><button type="button" class="btn" id="d-close">Close setup</button></div>
+    </section>
+
+    <!-- Update did not finish -->
+    <section class="page" id="p-failed" aria-labelledby="h-failed">
+      <p class="kicker">UPDATE</p>
+      <h2 id="h-failed">The update did not finish.</h2>
+      <p class="lede">Your previous version was put back and still works.</p>
+      <p class="error" id="f-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" class="btn primary" id="f-retry">Try again</button><button type="button" class="btn" id="f-open">Open the current version</button></div>
+    </section>
+
+    <!-- Uninstall -->
+    <section class="page" id="p-remove" aria-labelledby="h-remove">
+      <p class="kicker">UNINSTALL</p>
+      <h2 id="h-remove">Remove Study with Sarang?</h2>
+      <p class="lede">The app, its shortcuts and its sign-in entry will be removed.</p>
+      <label class="opt solo"><span><b>Also delete my saved mixes, time log and settings</b><small>Leave this off to keep them if you reinstall later.</small></span><input type="checkbox" id="r-data"><i class="sw" aria-hidden="true"></i></label>
+      <p class="error" id="r-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" class="btn" id="r-cancel">Keep it</button><button type="button" class="btn primary" id="r-go">Remove</button></div>
+    </section>
+    <section class="page" id="p-removed" aria-labelledby="h-removed">
+      <div class="check" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="M15 27l8 8 15-17"/></svg></div>
+      <h2 id="h-removed">Removed. Thanks for studying with us.</h2>
+      <p class="lede">The last files disappear a few seconds after this window closes.</p>
+      <div class="actions"><button type="button" class="btn primary" id="x-close">Close</button></div>
+    </section>
+  </main>
+  <script src="setup.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+// Loads the web build (SWA_WEB_URL) in Chromium and checks that the 2.0 features exist and the desktop-only ones are hidden.
+const { _electron: electron } = require('playwright-core');
+const assert = require('node:assert/strict');
+const fs = require('node:fs'); const os = require('node:os'); const path = require('node:path');
+const URL_ = process.env.SWA_WEB_URL || 'http://127.0.0.1:4173/';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+(async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'swa-web-'));
+  const main = path.join(dir, 'main.cjs');
+  fs.writeFileSync(main, `const { app, BrowserWindow } = require('electron'); app.whenReady().then(() => { const w = new BrowserWindow({ width: 1400, height: 900 }); w.loadURL(process.env.SWA_WEB_URL); });`);
+  const app = await electron.launch({ executablePath: require('electron'), args: [main, '--no-sandbox', '--disable-gpu'], env: { ...process.env, SWA_WEB_URL: URL_, XDG_CONFIG_HOME: dir } });
+  const page = await app.firstWindow();
+  const problems = []; page.on('pageerror', (e) => problems.push(e.message));
+  await page.waitForSelector('#sound'); await sleep(3500);
+  assert.ok(await page.locator('[data-testid="tour"]').count() > 0, 'the welcome tour opens on a first visit');
+  const titles = []; for (let i = 0; i < 12; i += 1) { const t = await page.locator('[data-testid="tour-title"]').innerText().catch(() => ''); if (t) titles.push(t); const next = page.locator('[data-testid="tour-next"]'); if (!(await next.count()) || !(await next.isEnabled())) break; await next.click(); await sleep(500); }
+  assert.ok(titles.length >= 7 && !titles.some((t) => /Beyond the window/i.test(t)), `no desktop step in the web tour: ${titles.join(' | ')}`);
+  console.log('PASS web: the tour runs without the desktop step');
+  await page.keyboard.press('Escape'); await sleep(900);
+  assert.equal(await page.locator('[data-testid="tour"]').count(), 0);
+  await page.reload(); await page.waitForSelector('#sound'); await sleep(3500);
+  assert.equal(await page.locator('[data-testid="tour"]').count(), 0, 'it does not return');
+  console.log('PASS web: skipping is remembered');
+  await page.click('header button[aria-label="Settings"]'); await page.waitForSelector('[data-testid="settings-panel"]');
+  const tabs = await page.locator('[data-testid="settings-panel"] nav button').allInnerTexts();
+  for (const want of ['Subjects and exams', 'Notifications', 'Flow voice and AI', 'Advanced']) assert.ok(tabs.some((t) => t.includes(want)), `tab ${want}: ${tabs.join(', ')}`);
+  for (const hidden of ['Study room', 'Automations', 'Calendar', 'Assistant']) assert.ok(!tabs.some((t) => t.includes(hidden)), `Essentials hides ${hidden}: ${tabs.join(', ')}`);
+  await page.click('[data-testid="settings-panel"] nav button:has-text("Advanced")'); await sleep(400);
+  await page.getByRole('switch', { name: /^Show everything/ }).check(); await sleep(800);
+  const all = await page.locator('[data-testid="settings-panel"] nav button').allInnerTexts();
+  for (const want of ['Subjects and exams', 'Study room', 'Automations', 'Calendar', 'Notifications', 'Flow voice and AI', 'Assistant']) assert.ok(all.some((t) => t.includes(want)), `tab ${want}: ${all.join(', ')}`);
+  tabs.length = 0; tabs.push(...all);
+  for (const gone of ['Drift detection', 'Auto-pause', 'Discord', 'Window and updates']) assert.ok(!tabs.some((t) => t.includes(gone)), `desktop-only tab ${gone} is hidden in the browser`);
+  console.log('PASS web: settings tabs (desktop-only ones are hidden)');
+  await page.keyboard.press('Escape'); await sleep(900);
+  const pill = page.locator('[data-testid="download-pill"]');
+  assert.equal(await pill.count(), 1, 'a Get the app link in the top bar');
+  assert.match(await pill.getAttribute('href'), /^https:\/\/github\.com\/sarang-cmd\/study-with-sarang\/releases\/latest$/);
+  await page.evaluate(() => { location.hash = '#studio'; }); await sleep(600);
+  assert.equal(await page.locator('[data-testid="download-direct"]').count(), 1, 'a download card on the Studio');
+  assert.match(await page.locator('[data-testid="download-direct"]').getAttribute('href'), /releases\/latest\/download\/Study-with-Sarang-Windows\.exe$/);
+  console.log('PASS web: the Get the app link and the Download card point at the newest GitHub release');
+  assert.deepEqual(problems, [], problems.join('\n'));
+  await app.close();
+  console.log('Web smoke test passed');
+})().catch((e) => { console.error(e); process.exit(1); });

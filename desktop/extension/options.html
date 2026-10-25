@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Study with Sarang helper</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 20px; color: #111; }
+  h1 { font-size: 20px; } label { display: block; margin: 14px 0 4px; font-weight: 600; }
+  input[type=text], input[type=number] { width: 100%; padding: 8px 10px; border: 1px solid #bbb; border-radius: 8px; font: inherit; box-sizing: border-box; }
+  button { margin-top: 16px; padding: 8px 16px; border-radius: 999px; border: 1px solid #111; background: #111; color: #fff; font: inherit; cursor: pointer; }
+  small, #msg { color: #555; display: block; margin-top: 6px; } .row { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+</style>
+<h1>Study with Sarang: browser helper</h1>
+<p>Open the desktop app, go to <b>Settings &gt; Drift detection</b>, turn on the browser helper and copy the pairing code here. Everything stays on this computer.</p>
+<label for="token">Pairing code</label><input id="token" type="text" autocomplete="off" spellcheck="false">
+<label for="port">Port</label><input id="port" type="number" min="1024" max="65535">
+<div class="row"><input id="enabled" type="checkbox"><label for="enabled" style="margin:0;font-weight:400">Report the open website</label></div>
+<div class="row"><input id="title" type="checkbox"><label for="title" style="margin:0;font-weight:400">Also report the page title (helps tell a lecture from a distraction)</label></div>
+<small>Private windows are never reported.</small>
+<button id="save">Save and test</button><span id="msg"></span>
+<script src="options.js"></script>
