@@ -87,3 +87,10 @@ Decisions: two Vercel projects stay (`study-with-sarang`, `sarang.md`); `sarang-
 ## Future requests
 
 Append "Request N" with its own table. Keep `docs/CHANGELOG.md` and `docs/MASTER_GUIDE.md` updated in the same step as the feature.
+
+## Request 7: Units 4 and 5, more questions, Ask orb (Sarang.md web 1.3.0)
+
+1. Write the 33 textbook chapters for Units 4 and 5 in the Units 1 to 3 format, each at least 2,000 prose words. Done: 211,392 words across all 83 chapters, checked by `scripts/count-textbook.mjs`.
+2. Question bank. The outline quotes 3,981 questions, which cannot be reproduced. Scope chosen: two long-form, multi-part questions for each of the 33 new codes (66 questions, 482 marks) with M, A, R and AG mark schemes. Every stated number is recomputed by `npm run build:long`. Done.
+3. Add the MorphOrb thinking orb as an "Ask" overlay in the Sarang.md top bar. Done; the answer step is local and hands off to the tutor.
+4. Not done: redeploying Sarang.md to Vercel (needs the owner's Vercel token), a desktop rebuild with the new content, and long-form questions for Units 1 to 3.
