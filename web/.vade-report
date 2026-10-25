@@ -1,0 +1,46 @@
+# Vercel Speed Insights Integration
+
+## Summary
+Successfully installed and configured Vercel Speed Insights for this Vite + React project following the latest official Vercel documentation.
+
+## Changes Made
+
+### 1. Package Installation
+**File**: `package.json`
+- Added `@vercel/speed-insights` (v2.0.0) as a dependency
+- Updated `package-lock.json` with the new dependency and its 151 sub-packages
+
+### 2. Speed Insights Integration
+**File**: `src/main.tsx`
+- Imported `injectSpeedInsights` from `@vercel/speed-insights`
+- Called `injectSpeedInsights()` early in the application lifecycle, right after imports
+- Added a descriptive comment explaining the initialization
+
+## Implementation Details
+
+### Framework-Specific Approach
+This project uses Vite as the build tool with React. According to Vercel's Speed Insights documentation, for Vite applications, the recommended approach is to use the `injectSpeedInsights()` function in the main entry file rather than the React component approach.
+
+The function was placed early in `main.tsx`, before any routing or conditional logic, to ensure Speed Insights tracks all user interactions across all application modes (including the special #puck and #flowbar hash routes).
+
+### Verification
+- ✅ TypeScript type checking passed (`npm run typecheck`)
+- ✅ Production build completed successfully (`npm run build`)
+- ✅ Core test suites passed (audio, mix, tracking, insights, achievements)
+- ✅ No new linting errors introduced
+- ✅ Lock file updated correctly
+
+## Next Steps for Deployment
+Once deployed to Vercel, Speed Insights will automatically begin collecting Core Web Vitals metrics including:
+- Largest Contentful Paint (LCP)
+- First Input Delay (FID)
+- Cumulative Layout Shift (CLS)
+- First Contentful Paint (FCP)
+- Time to First Byte (TTFB)
+
+Data will be visible in the Vercel dashboard under the "Speed Insights" tab after users visit the deployed application.
+
+## Notes
+- No configuration options were passed to `injectSpeedInsights()` - using defaults which is recommended for most use cases
+- The integration is non-blocking and will not impact application startup performance
+- Speed Insights respects user privacy and only collects anonymous performance metrics
