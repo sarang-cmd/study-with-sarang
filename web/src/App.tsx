@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Header } from './components/Header';
 import { FlowCard, Hero, HeroStrip } from './components/Hero';
 import { Soundscape } from './components/Soundscape';
@@ -280,5 +281,6 @@ export default function App() {
     <GoalCheck />
     <SessionFlow />
     <Celebration onOpenProgress={() => { location.hash = getPrefs().layout === 'new' ? 'progress' : 'tracking'; }} />
+    <Analytics />
   </SettingsProvider></DesktopProvider></TimerProvider></SoundProvider>;
 }
