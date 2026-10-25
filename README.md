@@ -68,7 +68,7 @@ cd desktop && npm run build && npx electron-builder --win --x64
 
 ## Part of the Sarang suite
 
-[Sarang.md](https://github.com/sarang-cmd/sarang.md) is the sibling app: an IB Mathematics AA course with textbook-length lessons and an IB-style question bank. Same design, same settings layout, same desktop shell. See [docs/SUITE.md](docs/SUITE.md).
+[Sarang.md](https://github.com/sarang-cmd/sarang.md) is the sibling app: an IB Mathematics AA course with lessons, an IB-style question bank and mark schemes. Same design, same settings layout, same desktop shell. See [docs/SUITE.md](docs/SUITE.md).
 
 ## Honest limits
 

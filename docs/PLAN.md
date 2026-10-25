@@ -49,7 +49,7 @@ Decisions (from the questions asked): the GitHub token is used from the shell on
 | R4-0 | Clean the workspace (old archives, old releases), look at the sarang.md repo | workspace | done |
 | R4-1 | Study with Sarang 2.1.1 / 1.9.1: Download pill and card, footer links, updater repo, screenshots | both | done |
 | R4-2 | Landing page, Pages workflow, CI, root README, SUITE.md, DEPLOYMENT_GUIDE.md | repo | done |
-| R4-3 | Repo `sarang-cmd/study-with-sarang`: description, topics, push, release v2.1.1, Pages on | GitHub | in progress |
+| R4-3 | Repo `sarang-cmd/study-with-sarang`: description, topics, push, release v2.1.1, Pages on | GitHub | done |
 | R4-4 | Sarang.md: Download links, About, suite links, version 1.1.0 | web | todo |
 | R4-5 | Textbook Unit 1 Number and Algebra, 16 topics of 2,000+ words | Sarang.md | todo |
 | R4-6 | Textbook Unit 2 Functions, 16 topics of 2,000+ words | Sarang.md | todo |
