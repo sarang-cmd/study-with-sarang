@@ -186,7 +186,7 @@ console.log('PASS errors, delete and sign out');
   // The desktop app and local previews are not valid link targets
   for (const [hostname, origin, protocol] of [['app.study-with-sarang.localhost', 'http://app.study-with-sarang.localhost:5173', 'http:'], ['localhost', 'http://localhost:5173', 'http:'], ['', 'null', 'file:']]) {
     globalThis.location = { protocol, hostname, origin, pathname: '/', search: '', hash: '' };
-    assert.equal(e.redirectTarget(), '', `no redirect from ${hostname || protocol}`);
+    assert.equal(e.redirectTarget(), 'https://study-with-sarang.vercel.app/', `email links from ${hostname || protocol} go to the hosted app`);
   }
 
   // An email link: token in the hash. It is stripped at once and only adopted for the address that signed up here.

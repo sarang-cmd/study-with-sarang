@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Card } from '../desktop/shared';
 import { runAutomationNow } from '../AutomationBridge';
 import { isDesktop } from '../../lib/desktop';
+import { SUITE } from '../../lib/suite';
 import { MAX_AUTOMATIONS, TEMPLATES, TRIGGERS, clearAutoLog, newAutomation, setAutomations, useAutoLog, useAutomations, type Automation } from '../../lib/automations';
 import { SNAP_VALUES, STEP_TYPES, describeStep, type MacroStep } from '../../lib/macros';
 import { builtInMixes, readSavedMixes } from '../../lib/mix';
@@ -27,6 +28,7 @@ function StepsEditor({ steps, onChange }: { steps: MacroStep[]; onChange: (steps
   const types = STEP_TYPES.filter((s) => isDesktop || !s.desktopOnly);
   const mixes = [...builtInMixes.map((m) => m.mix.name), ...readSavedMixes().map((m) => m.name)];
   return <div>
+    {!isDesktop && <p data-testid="auto-desktop-note" className="mb-2 text-[10.5px] leading-relaxed text-muted">More steps (show, hide or snap the window) exist in the <a className="underline" href={SUITE.study.downloadsUrl}>desktop app</a>; a web page cannot move windows.</p>}
     <ol className="grid gap-1.5" data-testid="auto-steps">
       {steps.length === 0 && <li className="text-[11px] text-muted">No steps yet.</li>}
       {steps.map((step, i) => {

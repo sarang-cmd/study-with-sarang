@@ -63,7 +63,7 @@ export function IntegrationsBridge() {
     if (!api) return;
     const send = () => {
       const now = Date.now();
-      const activity = buildActivity(dc, { playing: sound.playing, mixName: sound.mix.name, timerRunning: timer.running, timerMode: timer.mode, phase: timer.phase, seconds: timer.seconds, task: timer.task, cycle: timer.cycle + 1, cycles: timer.settings.cycles }, now);
+      const activity = buildActivity(dc, { playing: sound.playing, mixName: sound.mix.name, timerRunning: timer.running, timerMode: timer.mode, phase: timer.phase, seconds: timer.seconds, task: timer.task, cycle: timer.cycle + 1, cycles: timer.settings.cycles }, now, prefs.appIcon);
       const key = activityKey(activity);
       const stamp = activity?.timestamps ? (activity.timestamps.end ?? activity.timestamps.start ?? 0) : 0;
       const cfg = `${dc.enabled}:${effectiveAppId(dc)}`;
@@ -74,6 +74,6 @@ export function IntegrationsBridge() {
     send();
     const id = window.setInterval(send, 5000);
     return () => window.clearInterval(id);
-  }, [dc, sound.playing, sound.mix.name, timer.running, timer.mode, timer.phase, timer.seconds, timer.task, timer.cycle, timer.settings.cycles]);
+  }, [dc, sound.playing, sound.mix.name, timer.running, timer.mode, timer.phase, timer.seconds, timer.task, timer.cycle, timer.settings.cycles, prefs.appIcon]);
   return null;
 }

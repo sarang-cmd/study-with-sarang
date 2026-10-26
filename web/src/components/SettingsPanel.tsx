@@ -24,6 +24,7 @@ import { InterfaceTab } from './settings/InterfaceTab';
 import { SoundTab } from './settings/SoundTab';
 import { AutoPauseCard } from './desktop/AutoPauseCard';
 import { DiscordCard } from './desktop/DiscordCard';
+import { DesktopOnlyPanel } from './desktop/DesktopOnlyPanel';
 import { ensureManifest, getManifest, recordingsVersion, subscribeRecordings } from '../lib/recordings';
 import { FlowTab } from './settings/FlowTab';
 import { CalmTab } from './settings/CalmTab';
@@ -180,7 +181,7 @@ function AboutTab() {
 /** Settings as a dialog with a tab per topic. Opened from the gear in the top bar, Ctrl+, or the command palette. */
 export function SettingsPanel({ tab, onTab, onClose }: { tab: string; onTab: (tab: string) => void; onClose: () => void }) {
   const [prefs] = usePrefs();
-  const tabs = TABS.filter((item) => (!item.desktopOnly || isDesktop) && (prefs.advanced || ESSENTIAL_TABS.includes(item.id) || item.id === tab));
+  const tabs = TABS.filter((item) => (prefs.advanced || ESSENTIAL_TABS.includes(item.id) || item.id === tab));
   const active = (tabs.find((item) => item.id === tab) ?? tabs[0]).id;
   const close = useRef<HTMLButtonElement>(null);
   const body = useRef<HTMLDivElement>(null);
@@ -202,13 +203,13 @@ export function SettingsPanel({ tab, onTab, onClose }: { tab: string; onTab: (ta
     <div role="dialog" aria-modal="true" aria-labelledby="settings-heading" data-testid="settings-panel" className="flex h-[min(720px,100%)] w-full max-w-[960px] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-float arrive sm:flex-row">
       <nav aria-label="Settings sections" className="flex shrink-0 gap-1 overflow-x-auto border-b border-line bg-canvas p-2 sm:w-[210px] sm:flex-col sm:overflow-y-auto sm:border-b-0 sm:border-r sm:p-3">
         <p className="hidden px-2.5 pb-2 pt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.17em] text-muted sm:block">Settings</p>
-        {tabs.map(({ id, label, icon: Icon }) => <button key={id} type="button" aria-current={active === id ? 'page' : undefined} onClick={() => onTab(id)}
-          className={`flex shrink-0 items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12px] font-semibold transition-colors ${active === id ? 'bg-ink text-canvas' : 'text-muted hover:bg-raised hover:text-ink'}`}><Icon size={14} />{label}</button>)}
+        {tabs.map(({ id, label, icon: Icon, desktopOnly }) => <button key={id} type="button" aria-current={active === id ? 'page' : undefined} onClick={() => onTab(id)}
+          className={`flex shrink-0 items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12px] font-semibold transition-colors ${active === id ? 'bg-ink text-canvas' : 'text-muted hover:bg-raised hover:text-ink'}`}><Icon size={14} />{label}{desktopOnly && !isDesktop && <span className="ml-auto rounded-full border border-current px-1.5 text-[8.5px] font-semibold uppercase tracking-wider opacity-70">App</span>}</button>)}
       </nav>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-line px-5 py-3.5"><h2 id="settings-heading" className="text-[17px] font-semibold tracking-tight">{title}</h2>
           <button ref={close} type="button" onClick={onClose} aria-label="Close settings" className="flex h-9 w-9 items-center justify-center rounded-full border border-line hover:border-ink"><X size={15} /></button></div>
-        <div ref={body} className="min-h-0 flex-1 overflow-y-auto p-5">{content[active]}</div>
+        <div ref={body} className="min-h-0 flex-1 overflow-y-auto p-5">{!isDesktop && TABS.find((item) => item.id === active)?.desktopOnly ? <DesktopOnlyPanel id={active} /> : content[active]}</div>
       </div>
     </div>
   </div>;

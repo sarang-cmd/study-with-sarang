@@ -107,7 +107,10 @@ a = dc.buildActivity(full, { ...base, timerRunning: false }); assert.equal(a.det
 assert.equal(dc.buildActivity(full, { ...base, playing: false, timerRunning: false }), null, 'nothing to show when idle');
 assert.equal(dc.buildActivity({ ...full, showIdle: true }, { ...base, playing: false, timerRunning: false }).details, 'Resting');
 assert.equal(dc.buildActivity({ ...full, imageKey: '' }, base).assets, undefined);
-assert.equal(dc.buildActivity(full, base).assets.large_image, 'icon');
+const built = { ...full, appId: '' };
+assert.equal(dc.buildActivity(built, base).assets.large_image, 'https://study-with-sarang.vercel.app/icons/default/art-512.png', 'the status carries the app logo');
+assert.equal(dc.buildActivity(built, base, Date.now(), 'moon').assets.large_image, 'https://study-with-sarang.vercel.app/icons/moon/art-512.png', 'and follows the chosen icon');
+assert.equal(dc.buildActivity(full, base).assets.large_image, 'icon', 'your own application keeps your own picture name');
 assert.equal(dc.activityKey(dc.buildActivity(full, base, 0)), dc.activityKey(dc.buildActivity(full, { ...base, seconds: 1400 }, 50_000)), 'the clock alone does not cause an update');
 assert.notEqual(dc.activityKey(dc.buildActivity(full, base)), dc.activityKey(dc.buildActivity(full, { ...base, mixName: 'Rain' })));
 assert.equal(dc.isAppId('123456789012345678'), true); assert.equal(dc.isAppId('12345'), false);

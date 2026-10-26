@@ -23,6 +23,12 @@ The two numbers differ because the web edition started earlier and skips what a 
 
 # Web edition history
 
+## 1.11.0 (2026-10-26), one logo on Discord, password reset that works, every setting visible on the website
+
+* Fix: **the Discord status now shows the same logo as the app.** The built-in Discord application sends your chosen app icon as the large image (an https address on study-with-sarang.vercel.app); the card shows a preview of it. If you use your own Application ID, upload the icon in the Discord Developer Portal.
+* Fix: **password reset.** The Supabase project still pointed at localhost, so the link in the email led nowhere. The redirect list is fixed on the server and the app now sends the hosted address instead of its private desktop address. The Cloud screen says honestly what happens next.
+* New: **every settings page is on the website.** Drift detection, Auto-pause, Discord status, Window and updates and Voice and macros are now listed in the browser too, tagged App, with what they do and a download link, because a web page cannot control other windows or your keyboard outside the tab.
+
 ## 1.9.1 (2026-10-25), the apps get a home on GitHub
 
 - **Download links.** The browser version has a **Get the app** link in the top bar and a **Download for Windows** card on the Studio page; both point at the newest GitHub release. The desktop app does not show them, because it already is the app.

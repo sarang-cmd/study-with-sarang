@@ -26,6 +26,9 @@ export const defaultDiscord: DiscordSettings = {
   imageKey: 'icon', largeText: 'Study with Sarang', smallImageKey: '', smallText: '', activityType: 0, customDetails: '', customState: '', buttonLabel: '', buttonUrl: '',
 };
 
+/** The app logo as Discord shows it: the same picture as the window, tray and notifications (your chosen icon), loaded from the website. */
+export const DISCORD_ART_BASE = 'https://study-with-sarang.vercel.app/';
+export const discordArtUrl = (iconId = 'default') => `${DISCORD_ART_BASE}icons/${/^[a-z]+$/.test(iconId) ? iconId : 'default'}/art-512.png`;
 export const isAppId = (value: string) => /^\d{17,20}$/.test(value.trim());
 /** Your own ID if you entered one, otherwise the built-in one. */
 export const effectiveAppId = (settings: Pick<DiscordSettings, 'appId'>) => (isAppId(settings.appId) ? settings.appId.trim() : DEFAULT_APP_ID);
@@ -79,7 +82,7 @@ const clip = (text: string, max = 100) => { const t = text.replace(/\s+/g, ' ').
 const fill = (template: string, values: Record<string, string>) => template.replace(/\{(mix|task|phase|block|blocks)\}/g, (_, k: string) => values[k] ?? '').replace(/\s+/g, ' ').replace(/\s*\u00b7\s*$/, '').trim();
 
 /** What to show. Returns null to clear the status. Only what the privacy toggles allow ever leaves this function. */
-export function buildActivity(settings: DiscordSettings, input: PresenceInput, now = Date.now()): DiscordActivity | null {
+export function buildActivity(settings: DiscordSettings, input: PresenceInput, now = Date.now(), iconId = 'default'): DiscordActivity | null {
   if (!settings.enabled) return null;
   const active = input.playing || input.timerRunning;
   if (!active && !settings.showIdle) return null;
@@ -107,7 +110,7 @@ export function buildActivity(settings: DiscordSettings, input: PresenceInput, n
     activity.timestamps = input.timerMode === 'stopwatch' ? { start: Math.floor((now - ms) / 1000) } : { end: Math.floor((now + ms) / 1000) };
   }
   const assets: NonNullable<DiscordActivity['assets']> = {};
-  if (settings.imageKey) { assets.large_image = settings.imageKey; assets.large_text = clip(settings.largeText || 'Study with Sarang', 64); }
+  if (settings.imageKey) { assets.large_image = settings.imageKey === 'icon' && !usingOwnApp(settings) ? discordArtUrl(iconId) : settings.imageKey; assets.large_text = clip(settings.largeText || 'Study with Sarang', 64); }
   if (settings.smallImageKey) { assets.small_image = settings.smallImageKey; if (settings.smallText) assets.small_text = clip(settings.smallText, 64); }
   if (Object.keys(assets).length) activity.assets = assets;
   if (settings.buttonLabel && settings.buttonUrl) activity.buttons = [{ label: settings.buttonLabel, url: settings.buttonUrl }];

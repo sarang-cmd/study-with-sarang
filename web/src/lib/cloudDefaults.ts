@@ -11,4 +11,4 @@ export const DEFAULT_SUPABASE_KEY = 'sb_publishable_WJm8jtZ1OXc55LA6jnf01w_jN30z
  * The address of the hosted web app, if there is one. The desktop app and local previews cannot be the target of an
  * email link, so they use this. Leave empty to fall back to the Site URL set in the Supabase dashboard.
  */
-export const WEB_URL = '';
+export const WEB_URL = 'https://study-with-sarang.vercel.app/';

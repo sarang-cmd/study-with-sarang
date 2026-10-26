@@ -78,7 +78,7 @@ export function CloudSync({ number = '08', extraSynced, embedded = false }: { nu
         await syncNow(); return 'Account created and signed in.';
       }
       if (way === 'reset') {
-        if (!codeSent) { await requestPasswordReset(email); setCodeSent(true); return `If ${email.trim()} has an account, a reset code is on its way. Type it below with a new password. Only the newest code works.`; }
+        if (!codeSent) { await requestPasswordReset(email); setCodeSent(true); return `If ${email.trim()} has an account, a reset email is on its way. Open the link in it (it opens the website, where you choose a new password), or type the code below with a new password if the email shows one. Only the newest email works.`; }
         const proven = await verifyRecovery(email, code);
         await completePasswordSetup(newPassword, proven);
         setCode(''); setNewPassword(''); setCodeSent(false); setWay('password'); await syncNow(); return 'Password changed. You are signed in.';
@@ -142,7 +142,7 @@ export function CloudSync({ number = '08', extraSynced, embedded = false }: { nu
           </>}
           {way === 'code' && codeSent && <label className="mt-2 block text-[11px] font-semibold">Code from the email<input className={field} inputMode="numeric" autoComplete="one-time-code" required value={code} onChange={(event) => setCode(event.target.value)} /></label>}
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <button type="submit" className="studio-button !bg-ink !text-canvas" disabled={busy}>{way === 'password' ? 'Sign in' : way === 'create' ? (confirming ? 'Confirm' : 'Create account') : way === 'reset' ? (codeSent ? 'Save new password' : 'Email me a reset code') : codeSent ? 'Verify code' : 'Email me a code'}</button>
+            <button type="submit" className="studio-button !bg-ink !text-canvas" disabled={busy}>{way === 'password' ? 'Sign in' : way === 'create' ? (confirming ? 'Confirm' : 'Create account') : way === 'reset' ? (codeSent ? 'Save new password' : 'Email me a reset link') : codeSent ? 'Verify code' : 'Email me a code'}</button>
             {way === 'password' && <button type="button" data-testid="forgot-password" className="text-[11px] font-semibold text-muted underline underline-offset-4 hover:text-ink" onClick={() => { setWay('reset'); setProblem(''); setMessage(''); setCodeSent(false); }}>Forgot password?</button>}
             {way === 'reset' && <button type="button" className="text-[11px] font-semibold text-muted underline underline-offset-4 hover:text-ink" onClick={() => { setWay('password'); setProblem(''); setMessage(''); setCodeSent(false); }}>Back to sign in</button>}
             {way === 'create' && confirming && <button type="button" className="studio-button" disabled={busy} onClick={() => void run(async () => { await resendSignup(email); return 'A new code is on its way. Only the newest one works.'; })}>Send a new code</button>}

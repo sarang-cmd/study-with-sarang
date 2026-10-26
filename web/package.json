@@ -1,7 +1,7 @@
 {
   "name": "study-with-sarang",
   "private": true,
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "A focus studio for students (IB, GCSE, IGCSE, CBSE, A Level, AP or your own subjects): ambient sound with Flow, a timer with goals and to-dos, statistics, an optional AI helper. No account needed.",
   "type": "module",
   "scripts": {

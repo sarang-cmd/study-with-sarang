@@ -1,7 +1,7 @@
 {
   "name": "study-with-sarang-desktop",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Study with Sarang for the desktop: a focus studio for students (IB, GCSE, IGCSE, CBSE, A Level, AP or your own subjects) with live ambient sound, goals and to-dos, statistics, a floating timer, drift detection, an AI assistant and a calendar link.",
   "type": "module",
   "scripts": {

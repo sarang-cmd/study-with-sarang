@@ -48,6 +48,14 @@ function pipePaths(platform = process.platform, env = process.env) {
 const isAppId = (value) => /^\d{17,20}$/.test(String(value ?? ''));
 const text = (value, max) => (typeof value === 'string' && value.trim() ? value.replace(/\s+/g, ' ').trim().slice(0, max) : undefined);
 
+/** A picture is the name of an uploaded asset, or a plain https address (the app logo on its website). Nothing else gets through. */
+function picture(value) {
+  const v = text(value, 256);
+  if (!v) return undefined;
+  if (/^[a-z0-9_]{1,64}$/.test(v)) return v;
+  try { const u = new URL(v); if (u.protocol === 'https:' && !u.username && !u.password && u.hostname.endsWith('.vercel.app') && !u.search && !u.hash) return u.toString(); } catch { /* Not an address. */ }
+  return undefined;
+}
 /** Accepts only the fields Discord needs, with sizes it allows. */
 function sanitizeActivity(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -62,10 +70,10 @@ function sanitizeActivity(raw) {
   }
   if (raw.assets && typeof raw.assets === 'object') {
     const assets = {};
-    const large = text(raw.assets.large_image, 64);
-    if (large && /^[a-z0-9_]+$/.test(large)) { assets.large_image = large; assets.large_text = text(raw.assets.large_text, 128) ?? 'Study with Sarang'; }
-    const small = text(raw.assets.small_image, 64);
-    if (small && /^[a-z0-9_]+$/.test(small)) { assets.small_image = small; const st = text(raw.assets.small_text, 128); if (st) assets.small_text = st; }
+    const large = picture(raw.assets.large_image);
+    if (large) { assets.large_image = large; assets.large_text = text(raw.assets.large_text, 128) ?? 'Study with Sarang'; }
+    const small = picture(raw.assets.small_image);
+    if (small) { assets.small_image = small; const st = text(raw.assets.small_text, 128); if (st) assets.small_text = st; }
     if (Object.keys(assets).length) a.assets = assets;
   }
   if (Array.isArray(raw.buttons)) {

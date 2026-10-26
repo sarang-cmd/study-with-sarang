@@ -1,3 +1,4 @@
+import { AppIcon } from '../AppIcon';
 import { useDesktop } from '../../context/DesktopContext';
 import { buildActivity, cleanButtonUrl, defaultDiscord, DEFAULT_APP_ID, isAppId, usingOwnApp, type DiscordSettings } from '../../lib/discord';
 import { useIntegrationState } from '../../lib/integrationState';
@@ -15,7 +16,7 @@ export function DiscordCard() {
   const idOk = dc.appId === '' || isAppId(dc.appId);
   const own = usingOwnApp(dc);
   const sample = { playing: true, mixName: 'Flow', timerRunning: true, timerMode: 'pomodoro' as const, phase: 'focus' as const, seconds: 1450, task: 'Calculus past paper', cycle: 2, cycles: 4 };
-  const preview = buildActivity({ ...dc, enabled: true }, sample);
+  const preview = buildActivity({ ...dc, enabled: true }, sample, Date.now(), prefs.appIcon);
   const label = dc.enabled ? (STATUS[live.discordStatus] ?? live.discordStatus) : 'Off';
   const available = info?.platform === 'win32' || info?.platform === 'darwin' || info?.platform === 'linux';
   const buttonBad = dc.buttonUrl !== '' && !cleanButtonUrl(dc.buttonUrl);
@@ -37,6 +38,7 @@ export function DiscordCard() {
       </div>
       <div className="mt-3 rounded-xl border border-line px-3.5 py-3 text-[11px]" role="group" aria-label="Preview of your status" data-testid="discord-preview">
         <p className="font-mono text-[10px] uppercase tracking-wider text-muted">Preview, while a focus block runs</p>
+        {preview?.assets?.large_image && <span className="mt-2 inline-flex items-center gap-2 text-muted" data-testid="discord-logo"><AppIcon size={36} className="rounded-lg" />The picture on your profile is your app icon, so it matches the window and the tray.</span>}
         <p className="mt-1 font-semibold">{preview?.details ?? 'Nothing is shown'}</p>
         {preview?.state && <p className="text-muted">{preview.state}</p>}
         {preview?.timestamps && <p className="text-muted">24:10 left</p>}

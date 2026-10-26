@@ -36,7 +36,9 @@ pass('Discord frames: encode, split, partial, oversize, pipe names');
 const clean = discord.sanitizeActivity({ details: ' Focusing ', state: 'Flow', timestamps: { end: 5.9, start: 'x' }, assets: { large_image: 'icon', large_text: 'T' }, evil: 'x', buttons: [{ label: 'x', url: 'http://evil' }] });
 assert.deepEqual(clean, { details: 'Focusing', state: 'Flow', timestamps: { end: 5 }, assets: { large_image: 'icon', large_text: 'T' } });
 assert.equal(discord.sanitizeActivity({ state: 'no details' }), null); assert.equal(discord.sanitizeActivity('x'), null);
-assert.equal(discord.sanitizeActivity({ details: 'a', assets: { large_image: 'http://evil/x.png' } }).assets, undefined, 'only art-asset names, never URLs');
+assert.equal(discord.sanitizeActivity({ details: 'a', assets: { large_image: 'http://evil/x.png' } }).assets, undefined, 'never plain http');
+assert.equal(discord.sanitizeActivity({ details: 'a', assets: { large_image: 'https://evil.example/x.png' } }).assets, undefined, 'only our own vercel.app pictures');
+assert.equal(discord.sanitizeActivity({ details: 'a', assets: { large_image: 'https://study-with-sarang.vercel.app/icons/moon/art-512.png' } }).assets.large_image, 'https://study-with-sarang.vercel.app/icons/moon/art-512.png');
 assert.equal(discord.sanitizeActivity({ details: 'x'.repeat(500) }).details.length, 128);
 pass('Discord activity: only known fields, sizes and asset names');
 
