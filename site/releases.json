@@ -4,8 +4,8 @@
     "webNotes": "Every settings page is now on the website, tagged App when it needs the desktop app, with a download link. Password reset fixed. Earlier in 1.10.x: a Get the app banner, a download page, invitations and branded emails."
   },
   "md": {
-    "notes": "New: Discord status (off by default) with the Sarang.md logo, formula booklet, textbook, practice, mock exam and focus blocks, with privacy switches. Earlier in 1.2.x: the Ask orb as the front door of the AI Socratic tutor, all 83 textbook chapters and 66 long-form questions (written independently, not IB mark schemes).",
-    "webNotes": "Password reset links are understood, and the desktop-only window and Discord settings are shown with a download link. Earlier: the notification logo, the Ask orb fix, all 83 textbook chapters and 66 long-form questions."
+    "notes": "New: change the password of your encrypted cloud copy, or delete the copy when the password is lost (it cannot be recovered by design). Earlier in 1.3.0: Discord status with the Sarang.md logo. Earlier in 1.2.x: the Ask orb as the front door of the AI Socratic tutor, all 83 textbook chapters and 66 long-form questions.",
+    "webNotes": "Change the password of the encrypted cloud copy, or delete it when the password is lost. Earlier: password reset links, desktop-only settings explained, the notification logo, the Ask orb fix."
   },
   "helper": {
     "notes": "A new icon, a real settings page and a popup, one-click pairing with the app (no code to copy), install buttons in the app for Chrome, Edge and Brave, and automatic refresh of the helper folder after each app update."
