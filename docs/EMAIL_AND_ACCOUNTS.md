@@ -111,3 +111,9 @@ Resend sees the recipient address and the email text for each message, which is 
 3. Verify your domain in Resend and fill in the SMTP settings (section 5).
 4. Test sign up, reset, magic link, invitation and a change of email address with a real mailbox.
 5. Revoke the Supabase access token and any key you pasted anywhere else.
+
+## Current state (2026-10-27)
+
+* **Sarang.md project (`ddfvaonbikugjyhwpeei`):** Site URL `https://sarang-md.vercel.app`, redirect list updated, Resend SMTP on (`smtp.resend.com`, port 465, user `resend`, the API key is stored only in Supabase), 30 emails per hour, all branded templates applied.
+* **Sender:** Resend has no verified domain yet, so the sender is `onboarding@resend.dev`. Resend only delivers from that address to the Resend account owner's own email. To email anyone else, verify a domain at resend.com/domains, then change the sender address in Supabase (Authentication, SMTP settings) or with `apply-email-templates.mjs`'s companion PATCH (`smtp_admin_email`).
+* **Study project (`fykzmhxvhdrxvqkkhlnd`):** Site URL and redirect list are correct. SMTP and templates still need a Supabase access token from the account that owns that project (it is not the account that owns the Sarang.md project).
